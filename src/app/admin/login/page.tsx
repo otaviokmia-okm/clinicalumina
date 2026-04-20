@@ -1,0 +1,59 @@
+
+"use client";
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Sparkles, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+
+export default function AdminLoginPage() {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    // Simulate auth
+    setTimeout(() => {
+      router.push('/admin');
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-secondary/20 p-6">
+      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-xs uppercase tracking-widest hover:text-primary transition-colors">
+        <ArrowLeft className="h-4 w-4" /> Voltar ao Site
+      </Link>
+      
+      <Card className="w-full max-w-md shadow-2xl border-none rounded-none overflow-hidden">
+        <div className="h-2 bg-primary w-full" />
+        <CardHeader className="text-center py-10">
+          <div className="mx-auto w-12 h-12 bg-primary flex items-center justify-center rounded-sm mb-4">
+            <Sparkles className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <CardTitle className="text-3xl font-headline tracking-widest uppercase">Lumina Admin</CardTitle>
+          <CardDescription className="uppercase text-[10px] tracking-[0.2em] font-bold text-muted-foreground mt-2">Acesso Restrito Concierge</CardDescription>
+        </CardHeader>
+        <CardContent className="px-10 pb-12">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="user" className="text-[10px] uppercase tracking-widest">Identificação</Label>
+              <Input id="user" required className="rounded-none bg-secondary/10" placeholder="E-mail profissional" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pass" className="text-[10px] uppercase tracking-widest">Senha de Acesso</Label>
+              <Input id="pass" required type="password" className="rounded-none bg-secondary/10" />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full h-12 bg-primary hover:bg-primary/90 rounded-none uppercase tracking-widest text-sm">
+              {loading ? "Verificando..." : "Entrar no Painel"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

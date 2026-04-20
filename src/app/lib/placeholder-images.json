@@ -1,0 +1,35 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-spa",
+      "description": "Luxury spa interior with soft lighting",
+      "imageUrl": "https://picsum.photos/seed/lumina-hero/1920/1080",
+      "imageHint": "luxury spa interior"
+    },
+    {
+      "id": "service-facial",
+      "description": "Facial treatment close-up",
+      "imageUrl": "https://picsum.photos/seed/facial/800/600",
+      "imageHint": "facial treatment"
+    },
+    {
+      "id": "service-laser",
+      "description": "Advanced laser technology equipment",
+      "imageUrl": "https://picsum.photos/seed/laser/800/600",
+      "imageHint": "aesthetic laser technology"
+    },
+    {
+      "id": "service-bio",
+      "description": "Premium aesthetic product application",
+      "imageUrl": "https://picsum.photos/seed/bio/800/600",
+      "imageHint": "skincare treatment"
+    },
+    {
+      "id": "service-spa",
+      "description": "Relaxing spa massage environment",
+      "imageUrl": "https://picsum.photos/seed/spa-protocol/800/600",
+      "imageHint": "spa massage"
+    }
+  ]
+}
