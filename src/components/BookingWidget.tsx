@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Clock, User, Phone, Mail, CheckCircle2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const TIME_SLOTS = [
@@ -46,6 +45,11 @@ export function BookingWidget() {
     });
   };
 
+  const isDateDisabled = (date: Date) => {
+    const today = startOfDay(new Date());
+    return startOfDay(date) < today || date.getDay() === 0;
+  };
+
   if (isSuccess) {
     return (
       <div className="bg-secondary/40 p-12 text-center rounded-sm border border-primary/20 animate-in fade-in zoom-in duration-500">
@@ -69,14 +73,15 @@ export function BookingWidget() {
               Selecione o melhor momento para sua visita. Nosso concierge entrará em contato em até 24 horas para personalizar seu atendimento.
             </p>
             
-            <div className="bg-background p-6 shadow-sm border border-border/40">
+            <div className="bg-background p-6 shadow-sm border border-border/40 flex justify-center">
               <Calendar
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border-none"
+                className="rounded-md border-none w-full max-w-[350px]"
                 locale={ptBR}
-                disabled={(date) => date < new Date() || date.getDay() === 0}
+                disabled={isDateDisabled}
+                initialFocus
               />
             </div>
           </div>
