@@ -5,14 +5,14 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 
 export function Hero() {
-  const heroImage = PlaceHolderImages.find(img => img.id === 'hero-spa');
+  const heroImage = PlaceHolderImages.find(img => img.id === 'hero-spa')?.imageUrl || 'https://picsum.photos/seed/lumina-hero/1920/1080';
 
   return (
     <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
       {/* Background with subtle parallax simulation */}
       <div 
         className="absolute inset-0 z-0 parallax-container opacity-40 brightness-75 scale-105"
-        style={{ backgroundImage: `url(${heroImage?.imageUrl})` }}
+        style={{ backgroundImage: `url(${heroImage})` }}
         data-ai-hint="luxury spa"
       />
       

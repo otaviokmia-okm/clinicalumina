@@ -12,28 +12,28 @@ const SERVICES: Service[] = [
     name: 'Harmonização Facial',
     description: 'Realce sua beleza natural com protocolos exclusivos e minimamente invasivos.',
     duration: '60 min',
-    imageUrl: PlaceHolderImages.find(i => i.id === 'service-facial')?.imageUrl || ''
+    imageUrl: PlaceHolderImages.find(i => i.id === 'service-facial')?.imageUrl || 'https://picsum.photos/seed/facial-fallback/800/600'
   },
   {
     id: '2',
     name: 'Bioestimuladores',
     description: 'Tratamentos regenerativos para uma pele firme, luminosa e jovial de dentro para fora.',
     duration: '45 min',
-    imageUrl: PlaceHolderImages.find(i => i.id === 'service-bio')?.imageUrl || ''
+    imageUrl: PlaceHolderImages.find(i => i.id === 'service-bio')?.imageUrl || 'https://picsum.photos/seed/bio-fallback/800/600'
   },
   {
     id: '3',
     name: 'Tecnologias de Laser',
     description: 'O que há de mais moderno no mundo para rejuvenescimento e textura da pele.',
     duration: '30 min',
-    imageUrl: PlaceHolderImages.find(i => i.id === 'service-laser')?.imageUrl || ''
+    imageUrl: PlaceHolderImages.find(i => i.id === 'service-laser')?.imageUrl || 'https://picsum.photos/seed/laser-fallback/800/600'
   },
   {
     id: '4',
     name: 'Protocolos de SPA',
     description: 'Experiências sensoriais completas para relaxamento profundo e renovação celular.',
     duration: '90 min',
-    imageUrl: PlaceHolderImages.find(i => i.id === 'service-spa')?.imageUrl || ''
+    imageUrl: PlaceHolderImages.find(i => i.id === 'service-spa')?.imageUrl || 'https://picsum.photos/seed/spa-fallback/800/600'
   }
 ];
 
