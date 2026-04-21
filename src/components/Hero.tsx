@@ -24,20 +24,25 @@ export function Hero() {
       <div className="absolute inset-0 z-5 bg-gradient-to-r from-background via-transparent to-transparent opacity-30" />
       <div className="absolute inset-0 z-5 bg-gradient-to-b from-transparent via-background/10 to-background" />
       
-      <div className="relative z-10 text-center px-8 max-w-5xl mx-auto space-y-12">
+      <div className="relative z-10 text-center px-8 max-w-7xl mx-auto space-y-12">
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px w-12 bg-primary/40" />
             <span className="text-[10px] uppercase tracking-[0.8em] text-primary font-bold">The Art of Pure Beauty</span>
             <div className="h-px w-12 bg-primary/40" />
           </div>
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-headline leading-[0.85] tracking-tighter text-foreground drop-shadow-sm">
-            Lumina <br />
-            <span className="italic text-primary font-light">Aesthetics</span>
-          </h1>
+          
+          <div className="flex flex-col items-center">
+            <h1 className="font-headline text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] uppercase tracking-[0.25em] text-white leading-none drop-shadow-2xl">
+              Lumina
+            </h1>
+            <span className="text-primary font-black uppercase tracking-[0.6em] text-[10px] md:text-sm lg:text-base mt-6 drop-shadow-md">
+              Aesthetics
+            </span>
+          </div>
         </div>
         
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed tracking-wide animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+        <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto font-light leading-relaxed tracking-wide animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300 drop-shadow-sm">
           Onde a medicina de precisão encontra a estética de luxo para revelar sua melhor versão.
         </p>
         
