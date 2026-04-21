@@ -30,6 +30,10 @@ export function BookingWidget() {
 
   const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Capturamos o formulário imediatamente antes de qualquer await
+    const formElement = e.currentTarget;
+
     if (!date || !slot) {
       toast({
         variant: 'destructive',
@@ -47,7 +51,7 @@ export function BookingWidget() {
         await signInAnonymously(auth);
       }
 
-      const formData = new FormData(e.currentTarget);
+      const formData = new FormData(formElement);
       const appointmentData = {
         clientName: formData.get('name') as string,
         clientPhone: formData.get('phone') as string,
@@ -56,7 +60,7 @@ export function BookingWidget() {
         serviceName: 'Harmonização Facial', // Default para protótipo
         date: format(date, 'yyyy-MM-dd'),
         timeSlot: slot,
-        status: 'Pendente',
+        status: 'Pendente' as const,
         clientId: auth.currentUser?.uid || 'guest',
         createdAt: new Date().toISOString()
       };
