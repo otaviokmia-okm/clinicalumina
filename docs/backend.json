@@ -1,0 +1,213 @@
+{
+  "entities": {
+    "Client": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a client who schedules an appointment with Lumina Aesthetics.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Client entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the client."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The contact phone number of the client."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the client.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the client record was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "phone",
+        "email",
+        "createdAt"
+      ]
+    },
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
+      "type": "object",
+      "description": "Defines the aesthetic services offered by Lumina Aesthetics.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Service entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the aesthetic service (e.g., Harmonização Facial)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the service provided."
+        },
+        "durationMinutes": {
+          "type": "number",
+          "description": "The estimated duration of the service in minutes."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the service."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to an image representing the service.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "durationMinutes",
+        "price",
+        "imageUrl"
+      ]
+    },
+    "Appointment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Appointment",
+      "type": "object",
+      "description": "Represents a scheduled appointment for a client with Lumina Aesthetics, including its status and details.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Appointment entity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to the Client who booked the appointment. (Relationship: Client 1:N Appointment)"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Reference to the Service booked for the appointment. (Relationship: Service 1:N Appointment)"
+        },
+        "scheduledDateTime": {
+          "type": "string",
+          "description": "The date and time when the appointment is scheduled.",
+          "format": "date-time"
+        },
+        "originalScheduledDateTime": {
+          "type": "string",
+          "description": "The initial date and time when the appointment was first scheduled, before any rescheduling.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the appointment (e.g., 'Pending', 'Confirmed', 'Rescheduled', 'Canceled')."
+        },
+        "adminNotes": {
+          "type": "string",
+          "description": "Any internal notes added by an administrator regarding the appointment."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the appointment was initially created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the appointment was last updated (e.g., status change, reschedule).",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "serviceId",
+        "scheduledDateTime",
+        "status",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores details of each aesthetic service offered. Publicly readable for display, writable only by administrators.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "Unique identifier for a service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/clients/{clientId}",
+        "definition": {
+          "entityName": "Client",
+          "schema": {
+            "$ref": "#/backend/entities/Client"
+          },
+          "description": "Contains records of clients who have booked appointments. Managed exclusively by administrators. No direct client login is assumed for this entity's primary management, rather it's an internal CRM entry. Client information is created/updated typically when an appointment is booked via an admin-mediated process or directly by an admin.",
+          "params": [
+            {
+              "name": "clientId",
+              "description": "Unique identifier for a client."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/appointments/{appointmentId}",
+        "definition": {
+          "entityName": "Appointment",
+          "schema": {
+            "$ref": "#/backend/entities/Appointment"
+          },
+          "description": "Manages all scheduled appointments, linking clients to services. Includes denormalized 'clientId' for authorization independence, allowing clients to read their own appointments directly. Created by clients via the booking form, and fully managed (read, update, delete) by administrators. The 'status' field ('Pendente', 'Confirmed', 'Rescheduled', 'Canceled') models the appointment lifecycle.",
+          "params": [
+            {
+              "name": "appointmentId",
+              "description": "Unique identifier for an appointment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/admin_roles/{adminId}",
+        "definition": {
+          "entityName": "admin_role",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Dedicated collection for Database Access Control (DBAC). The mere existence of a document with the user's UID as the ID grants administrative privileges. This supports global roles for the admin dashboard and simplifies security rules based on 'existence over content'.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of an administrator."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The proposed Firestore structure is designed for a high-end aesthetic clinic, Lumina Aesthetics, prioritizing secure, scalable, and debuggable data management in line with the core design principles.The primary collections are `services`, `clients`, `appointments`, and `admin_roles`. The structure emphasizes Authorization Independence by denormalizing authorization context where needed and supports Query-As-Permissions (QAP) by segregating data with different security postures.\n\n**Authorization Independence via Denormalization:**\n*   **`/appointments/{appointmentId}`:** Each appointment document directly includes the `clientId`. This is critical for authorization independence, allowing clients to read only their own appointments without requiring complex `get()` lookups on a parent `client` document within security rules. A rule like `allow read: if request.auth.uid == resource.data.clientId;` directly checks ownership, making it atomic, efficient, and easy to debug. This also enables robust list operations for clients, as they can query for `clientId == request.auth.uid` and the rule can validate this query, ensuring QAP.\n*   **`/admin_roles/{adminId}`:** Admin authorization is handled by the mere existence of a document in this collection where `adminId` matches `request.auth.uid`. This direct existence check (e.g., `get(/databases/$(database)/documents/admin_roles/$(request.auth.uid)).exists()`) ensures admin permissions are evaluated atomically and independently of any other data, adhering to the DBAC principle and preventing hierarchical dependencies.\n\n**Support for Query-As-Permissions (QAP):**\n*   **`/services/{serviceId}`:** This collection holds static service information. All documents within it share the same security posture: public read, admin write. This homogeneity means `list` operations (e.g., displaying all services on the website) can be permitted broadly for read, while write is restricted to admins, directly supporting QAP. Rules do not need to filter results, as all accessible documents are intended for general consumption.\n*   **`/appointments/{appointmentId}`:** For clients, `list` queries will explicitly include `where('clientId', '==', request.auth.uid)`. Security rules can validate that the `clientId` filter matches the authenticated user's ID, thus allowing only authorized `list` operations without internal filtering. For administrators, who need to view all appointments, the `isAdmin()` rule permits unfiltered `list` operations directly on the collection, as they have universal access.\n*   **`/clients/{clientId}`:** This collection primarily serves as an internal administrative record. `list` operations are restricted solely to authenticated administrators, ensuring that QAP is met by not allowing general users to list client records.\n\nThis design ensures that authorization rules are clear, maintainable, and directly enforced by the data structure, avoiding the common pitfalls of complex, dependent security logic."
+  }
+}
