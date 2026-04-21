@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -10,28 +9,28 @@ const SERVICES: Service[] = [
   {
     id: '1',
     name: 'Harmonização Facial',
-    description: 'Realce sua beleza natural com protocolos exclusivos e minimamente invasivos.',
+    description: 'Protocolos minimamente invasivos para realçar seus traços com naturalidade.',
     duration: '60 min',
     imageUrl: PlaceHolderImages.find(i => i.id === 'service-facial')?.imageUrl || 'https://picsum.photos/seed/facial-fallback/800/600'
   },
   {
     id: '2',
     name: 'Bioestimuladores',
-    description: 'Tratamentos regenerativos para uma pele firme, luminosa e jovial de dentro para fora.',
+    description: 'Bio-regeneração profunda para firmeza e luminosidade celular duradoura.',
     duration: '45 min',
     imageUrl: PlaceHolderImages.find(i => i.id === 'service-bio')?.imageUrl || 'https://picsum.photos/seed/bio-fallback/800/600'
   },
   {
     id: '3',
-    name: 'Tecnologias de Laser',
-    description: 'O que há de mais moderno no mundo para rejuvenescimento e textura da pele.',
+    name: 'Lasers de Elite',
+    description: 'Tecnologia de precisão para rejuvenescimento e textura impecável da pele.',
     duration: '30 min',
     imageUrl: PlaceHolderImages.find(i => i.id === 'service-laser')?.imageUrl || 'https://picsum.photos/seed/laser-fallback/800/600'
   },
   {
     id: '4',
-    name: 'Protocolos de SPA',
-    description: 'Experiências sensoriais completas para relaxamento profundo e renovação celular.',
+    name: 'Experiência SPA',
+    description: 'Protocolos sensoriais para relaxamento profundo e renovação estética.',
     duration: '90 min',
     imageUrl: PlaceHolderImages.find(i => i.id === 'service-spa')?.imageUrl || 'https://picsum.photos/seed/spa-fallback/800/600'
   }
@@ -39,33 +38,40 @@ const SERVICES: Service[] = [
 
 export function Services() {
   return (
-    <section id="services" className="py-24 bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl md:text-5xl font-headline">Nossos Serviços</h2>
-          <div className="w-12 h-1 bg-primary mx-auto" />
-          <p className="text-muted-foreground max-w-xl mx-auto">Excelência técnica em cada detalhe, desenhada para superar as expectativas mais exigentes.</p>
+    <section id="services" className="py-32 bg-secondary/10">
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+          <div className="space-y-4">
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Nossos Tratamentos</span>
+            <h2 className="text-5xl md:text-6xl font-headline">Serviços <span className="italic">Exclusivos</span></h2>
+          </div>
+          <p className="text-muted-foreground max-w-sm font-light leading-relaxed">
+            Curadoria de técnicas avançadas para resultados que transcendem o tempo.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {SERVICES.map((service) => (
-            <Card key={service.id} className="group border-none bg-secondary/30 overflow-hidden shadow-none hover:shadow-2xl transition-all duration-500">
-              <div className="relative h-64 overflow-hidden">
+            <Card key={service.id} className="group border-none bg-background overflow-hidden rounded-none shadow-none hover:shadow-2xl transition-all duration-700">
+              <div className="relative h-80 overflow-hidden">
                 <Image
                   src={service.imageUrl}
                   alt={service.name}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
                   data-ai-hint="beauty service"
                 />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
+                <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-all duration-700" />
               </div>
-              <CardContent className="p-8 space-y-4">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">{service.duration}</span>
-                <h3 className="text-2xl font-headline group-hover:text-primary transition-colors">{service.name}</h3>
+              <CardContent className="p-10 space-y-6">
+                <div className="flex items-center gap-4">
+                   <div className="h-px w-6 bg-primary/40" />
+                   <span className="text-[9px] uppercase tracking-[0.3em] text-primary font-bold">{service.duration}</span>
+                </div>
+                <h3 className="text-2xl font-headline leading-tight">{service.name}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground font-light">{service.description}</p>
                 <div className="pt-4">
-                   <a href="#booking" className="text-xs uppercase tracking-widest font-semibold border-b border-primary/20 hover:border-primary transition-colors inline-block pb-1">Agendar</a>
+                   <a href="#booking" className="text-[10px] uppercase tracking-[0.3em] font-bold border-b border-primary/20 hover:border-primary transition-all inline-block pb-2">Agendar Experiência</a>
                 </div>
               </CardContent>
             </Card>

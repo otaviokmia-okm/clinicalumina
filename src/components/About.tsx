@@ -1,56 +1,62 @@
-
 "use client";
 
 import { ShieldCheck, Sparkles, Clock, UserCheck } from 'lucide-react';
 
 const FEATURES = [
   {
-    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
-    title: 'Tecnologia Segura',
-    desc: 'Equipamentos de última geração aprovados pelas maiores agências mundiais.'
+    icon: <ShieldCheck className="h-6 w-6 text-primary" />,
+    title: 'TECNOLOGIA AVANÇADA',
+    desc: 'Protocolos globais de segurança e precisão técnica.'
   },
   {
-    icon: <Sparkles className="h-8 w-8 text-primary" />,
-    title: 'Estética Minimalista',
-    desc: 'Buscamos o equilíbrio realçando sua beleza sem excessos artificiais.'
+    icon: <Sparkles className="h-6 w-6 text-primary" />,
+    title: 'ESTÉTICA REFINADA',
+    desc: 'Resultados naturais que preservam sua identidade.'
   },
   {
-    icon: <Clock className="h-8 w-8 text-primary" />,
-    title: 'Exclusividade de Tempo',
-    desc: 'Agenda espaçada para garantir privacidade e atenção total do especialista.'
+    icon: <Clock className="h-6 w-6 text-primary" />,
+    title: 'EXCLUSIVIDADE',
+    desc: 'Atendimento com tempo dedicado e privacidade total.'
   },
   {
-    icon: <UserCheck className="h-8 w-8 text-primary" />,
-    title: 'Cuidado Humanizado',
-    desc: 'Um olhar integral sobre sua saúde, pele e bem-estar emocional.'
+    icon: <UserCheck className="h-6 w-6 text-primary" />,
+    title: 'CUIDADO INTEGRAL',
+    desc: 'Foco na sua saúde, pele e equilíbrio emocional.'
   }
 ];
 
 export function About() {
   return (
-    <section id="about" className="py-24 bg-white border-y border-border/40">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          <div className="space-y-8">
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Nossos Diferenciais</span>
-            <h2 className="text-4xl md:text-5xl font-headline leading-tight">Onde a <br /> Ciência Encontra <br /><span className="italic">a Arte da Estética</span></h2>
-            <p className="text-lg text-muted-foreground font-light leading-relaxed">
-              Na Lumina Aesthetics, acreditamos que a verdadeira beleza reside na harmonia. Nossa clínica foi concebida para ser um refúgio urbano onde cada detalhe, desde o aroma ambiente até a precisão técnica, é pensado para proporcionar uma jornada transformadora.
+    <section id="about" className="py-32 bg-background">
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 items-start">
+          <div className="lg:col-span-5 space-y-12">
+            <div className="space-y-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Manifesto</span>
+              <h2 className="text-5xl md:text-6xl font-headline leading-[1.1]">Onde a Ciência <br />Encontra a <br /><span className="italic text-primary">Obra de Arte</span></h2>
+            </div>
+            
+            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+              Na Lumina, não seguimos tendências passageiras. Criamos jornadas de transformação baseadas na harmonia e na longevidade, em um refúgio desenhado para os sentidos.
             </p>
-            <div className="pt-4 border-l-2 border-primary pl-6">
-              <p className="font-headline text-xl italic text-foreground/80">
-                "Não criamos beleza. Nós a revelamos através da ciência e do cuidado."
+
+            <div className="pt-10 border-t border-border">
+              <p className="font-headline text-2xl italic text-foreground/70 leading-relaxed">
+                "Beleza não é sobre mudar quem você é, mas sobre revelar sua luz mais pura."
               </p>
-              <p className="text-xs uppercase tracking-widest mt-2 font-semibold">— Dra. Elena Lumina</p>
+              <div className="flex items-center gap-4 mt-8">
+                 <div className="h-px w-12 bg-primary" />
+                 <p className="text-[10px] uppercase tracking-[0.3em] font-bold">Dra. Elena Lumina</p>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
             {FEATURES.map((f, i) => (
-              <div key={i} className="space-y-4 p-8 bg-secondary/10 hover:bg-secondary/20 transition-colors">
-                {f.icon}
-                <h4 className="text-xl font-headline">{f.title}</h4>
-                <p className="text-sm text-muted-foreground font-light">{f.desc}</p>
+              <div key={i} className="group p-12 bg-secondary/20 border border-transparent hover:border-primary/10 transition-all duration-700">
+                <div className="mb-8 group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
+                <h4 className="text-[11px] uppercase tracking-[0.3em] font-bold mb-4">{f.title}</h4>
+                <p className="text-sm text-muted-foreground font-light leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>

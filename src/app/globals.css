@@ -1,54 +1,54 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Sophisticated Off-White Background */
-    --background: 40 18% 95%;
-    --foreground: 0 0% 10%;
+    /* Paleta Lumina: Quiet Luxury */
+    --background: 40 25% 98%;      /* Off-white cremoso */
+    --foreground: 20 10% 12%;      /* Cinza carvão profundo */
     
-    /* Muted Bronze Primary */
-    --primary: 44 12% 48%;
-    --primary-foreground: 40 18% 98%;
+    /* Bronze Nobre */
+    --primary: 35 30% 45%;         /* Bronze clássico */
+    --primary-foreground: 40 25% 98%;
     
-    /* Muted Rose Gold Accent */
-    --accent: 11 25% 64%;
-    --accent-foreground: 0 0% 98%;
+    /* Mármore / Ouro Pálido */
+    --secondary: 40 15% 92%;       
+    --secondary-foreground: 35 30% 20%;
+    
+    /* Sépia / Rose Gold Muted */
+    --accent: 15 25% 65%;
+    --accent-foreground: 40 25% 98%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 20 10% 12%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 20 10% 12%;
     
-    --secondary: 44 10% 90%;
-    --secondary-foreground: 44 12% 20%;
-    
-    --muted: 44 5% 90%;
-    --muted-foreground: 44 10% 40%;
+    --muted: 40 10% 94%;
+    --muted-foreground: 40 10% 45%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 44 10% 85%;
-    --input: 44 10% 85%;
-    --ring: 44 12% 48%;
+    --border: 35 15% 88%;
+    --input: 35 15% 88%;
+    --ring: 35 30% 45%;
     
-    --radius: 0.25rem;
+    --radius: 0rem; /* Bordas retas para ar mais arquitetônico e luxuoso */
   }
 
   .dark {
-    --background: 0 0% 8%;
-    --foreground: 40 18% 95%;
-    --card: 0 0% 10%;
-    --card-foreground: 40 18% 95%;
-    --primary: 44 12% 55%;
-    --primary-foreground: 0 0% 8%;
-    --accent: 11 25% 70%;
-    --accent-foreground: 0 0% 8%;
-    --border: 0 0% 15%;
+    --background: 20 10% 5%;
+    --foreground: 40 25% 95%;
+    --card: 20 10% 8%;
+    --card-foreground: 40 25% 95%;
+    --primary: 35 30% 55%;
+    --primary-foreground: 20 10% 5%;
+    --accent: 15 25% 70%;
+    --accent-foreground: 20 10% 5%;
+    --border: 20 10% 15%;
   }
 }
 
@@ -58,10 +58,17 @@
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
+    letter-spacing: -0.01em;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-headline tracking-tight;
   }
+}
+
+.text-gold-gradient {
+  background: linear-gradient(to right, #B8860B, #EEDC82, #B8860B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .parallax-container {
@@ -69,4 +76,15 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+/* Custom scrollbar para luxo */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/20;
 }

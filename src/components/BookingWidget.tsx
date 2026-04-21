@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, User, Phone, Mail, CheckCircle2, Loader2, CalendarX2, MessageCircle } from 'lucide-react';
+import { Clock, User, Phone, Mail, CheckCircle2, Loader2, CalendarX2, MessageCircle, Sparkles } from 'lucide-react';
 import { format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFirestore, useAuth, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
@@ -32,6 +31,7 @@ export function BookingWidget() {
   const auth = useAuth();
 
   useEffect(() => {
+    // Avoid hydration errors by setting the initial date on the client
     setDate(new Date());
   }, []);
 
@@ -121,36 +121,42 @@ export function BookingWidget() {
 
   if (isSuccess) {
     return (
-      <div className="bg-white p-12 text-center rounded-none border border-primary/20 animate-in fade-in zoom-in duration-500 max-w-2xl mx-auto my-24 shadow-2xl">
-        <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-6" />
-        <h3 className="text-3xl font-headline mb-4">Experiência Solicitada</h3>
-        <p className="text-muted-foreground mb-8 max-w-md mx-auto font-light">
-          Sua solicitação para {bookingDetails && format(new Date(bookingDetails.date + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })} às {slot} foi registrada.
+      <div className="bg-background p-16 text-center border-2 border-primary/10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto my-32 shadow-2xl">
+        <div className="mx-auto w-20 h-20 bg-primary/10 flex items-center justify-center rounded-full mb-8">
+           <CheckCircle2 className="h-10 w-10 text-primary" />
+        </div>
+        <h3 className="text-4xl font-headline mb-6">Sua Visita Aguarda</h3>
+        <p className="text-muted-foreground mb-12 max-w-md mx-auto font-light leading-relaxed">
+          Sua solicitação para {bookingDetails && format(new Date(bookingDetails.date + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })} foi registrada. Nosso concierge entrará em contato em breve.
         </p>
         
-        <div className="space-y-4">
-          <Button asChild className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-14 rounded-none uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+        <div className="space-y-6">
+          <Button asChild className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-16 rounded-none uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3">
             <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="h-5 w-5" /> Falar com o Concierge Agora
+              <MessageCircle className="h-5 w-5" /> Contatar Concierge via WhatsApp
             </a>
           </Button>
-          <Button onClick={() => setIsSuccess(false)} variant="ghost" className="uppercase text-[10px] tracking-widest">Voltar para o site</Button>
+          <Button onClick={() => setIsSuccess(false)} variant="ghost" className="uppercase text-[9px] tracking-[0.3em] font-bold text-muted-foreground hover:text-primary">Novo Agendamento</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <section id="booking" className="py-24 bg-secondary/20">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          <div className="space-y-8">
-            <h2 className="text-4xl md:text-5xl font-headline">Reserve sua <br /><span className="text-primary italic">Lumina Experience</span></h2>
-            <p className="text-muted-foreground font-light leading-relaxed">
-              Selecione o melhor momento para sua visita. Nosso concierge entrará em contato para personalizar seu atendimento.
+    <section id="booking" className="py-32 bg-background border-t border-border">
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 items-start">
+          <div className="lg:col-span-5 space-y-12">
+            <div className="space-y-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Reservas</span>
+              <h2 className="text-5xl md:text-6xl font-headline leading-tight">Agende sua <br /><span className="text-primary italic">Experiência Lumina</span></h2>
+            </div>
+            
+            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+              Escolha o momento ideal para sua transformação. Cada visita é planejada com exclusividade para atender seus desejos.
             </p>
             
-            <div className="bg-background p-6 shadow-sm border border-border/40 flex justify-center">
+            <div className="p-8 bg-secondary/20 border border-primary/5 shadow-inner">
               <Calendar
                 mode="single"
                 selected={date}
@@ -158,21 +164,21 @@ export function BookingWidget() {
                   setDate(d);
                   setSlot('');
                 }}
-                className="rounded-md border-none w-full"
+                className="w-full"
                 locale={ptBR}
                 disabled={isDateDisabled}
               />
             </div>
           </div>
 
-          <form onSubmit={handleBooking} className="bg-background p-10 shadow-xl space-y-8 border border-border/20">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Horários Disponíveis</Label>
-                {isLoadingAppts && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+          <form onSubmit={handleBooking} className="lg:col-span-7 bg-white p-12 md:p-16 shadow-2xl space-y-12 border border-border/40">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b pb-4">
+                <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Horários Disponíveis</Label>
+                {isLoadingAppts && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
               </div>
               
-              <RadioGroup value={slot} onValueChange={setSlot} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <RadioGroup value={slot} onValueChange={setSlot} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {TIME_SLOTS.map((time) => {
                   const isBusy = busySlots.includes(time);
                   return (
@@ -186,13 +192,13 @@ export function BookingWidget() {
                       <Label
                         htmlFor={time}
                         className={cn(
-                          "flex items-center justify-center p-3 text-sm border border-border transition-all rounded-none",
+                          "flex items-center justify-center p-4 text-[11px] font-bold tracking-widest border border-border transition-all duration-300 rounded-none",
                           isBusy 
-                            ? "bg-secondary/50 text-muted-foreground cursor-not-allowed border-dashed opacity-50" 
+                            ? "bg-muted text-muted-foreground/40 cursor-not-allowed border-dashed opacity-50" 
                             : "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-secondary cursor-pointer"
                         )}
                       >
-                        {isBusy ? <CalendarX2 className="h-3 w-3 mr-1 opacity-50" /> : null}
+                        {isBusy ? <CalendarX2 className="h-3 w-3 mr-2 opacity-50" /> : null}
                         {time}
                       </Label>
                     </div>
@@ -201,28 +207,28 @@ export function BookingWidget() {
               </RadioGroup>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-xs uppercase tracking-widest">Nome Completo</Label>
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <Label htmlFor="name" className="text-[10px] uppercase tracking-[0.2em] font-bold">Identificação</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input name="name" id="name" required placeholder="Ex: Maria Silva" className="pl-10 rounded-none bg-secondary/10" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
+                  <Input name="name" id="name" required placeholder="NOME COMPLETO" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-xs uppercase tracking-widest">Telefone</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <Label htmlFor="phone" className="text-[10px] uppercase tracking-[0.2em] font-bold">Contato</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input name="phone" id="phone" required type="tel" placeholder="(11) 99999-9999" className="pl-10 rounded-none bg-secondary/10" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
+                    <Input name="phone" id="phone" required type="tel" placeholder="(00) 00000-0000" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-xs uppercase tracking-widest">E-mail</Label>
+                <div className="space-y-4">
+                  <Label htmlFor="email" className="text-[10px] uppercase tracking-[0.2em] font-bold">E-mail</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input name="email" id="email" required type="email" placeholder="contato@exemplo.com" className="pl-10 rounded-none bg-secondary/10" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
+                    <Input name="email" id="email" required type="email" placeholder="EMAIL PROFISSIONAL" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
                   </div>
                 </div>
               </div>
@@ -231,14 +237,18 @@ export function BookingWidget() {
             <Button 
               type="submit" 
               disabled={loading || !date || !slot || busySlots.includes(slot)} 
-              className="w-full h-14 text-sm uppercase tracking-widest bg-primary hover:bg-primary/90 transition-all rounded-none"
+              className="w-full h-16 text-[11px] uppercase tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-xl"
             >
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Solicitar Agendamento"}
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Solicitar Reserva"}
             </Button>
             
-            <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
-              Garantimos total privacidade e discrição com seus dados.
-            </p>
+            <div className="flex items-center justify-center gap-3 opacity-50">
+               <Sparkles className="h-3 w-3 text-primary" />
+               <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.3em]">
+                 Sua privacidade é nosso compromisso de luxo.
+               </p>
+               <Sparkles className="h-3 w-3 text-primary" />
+            </div>
           </form>
         </div>
       </div>
