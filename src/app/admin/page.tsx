@@ -23,7 +23,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send, Smartphone } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -35,7 +35,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { sendTwilioMessage } from '@/app/actions/twilio-actions';
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
@@ -59,7 +58,6 @@ export default function AdminDashboard() {
   const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
   const [aiResult, setAiResult] = useState<{ message: string; guidance: string; emailSubject?: string; emailBody?: string } | null>(null);
   const [generatingAi, setGeneratingAi] = useState(false);
-  const [sendingMessage, setSendingMessage] = useState(false);
   
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
@@ -113,38 +111,6 @@ export default function AdminDashboard() {
       });
     } finally {
       setGeneratingAi(false);
-    }
-  };
-
-  const handleSendTwilio = async () => {
-    if (!selectedAppt || !aiResult) return;
-    
-    setSendingMessage(true);
-    try {
-      const fullMessage = `${aiResult.message}\n\nOrientações: ${aiResult.guidance}`;
-      // Tenta enviar via SMS (ou WhatsApp se configurado na action)
-      const response = await sendTwilioMessage(selectedAppt.clientPhone, fullMessage, true);
-      
-      if (response.success) {
-        toast({
-          title: 'Mensagem Enviada',
-          description: 'A confirmação foi enviada via Twilio com sucesso.'
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erro no Twilio',
-          description: response.error
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro Crítico',
-        description: 'Não foi possível processar o envio via Twilio.'
-      });
-    } finally {
-      setSendingMessage(false);
     }
   };
 
@@ -364,30 +330,19 @@ export default function AdminDashboard() {
 
           <DialogFooter className="sm:justify-between gap-4">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest max-w-[200px] leading-tight">
-              Utilize o Twilio para envio automatizado ou o WhatsApp Web para contato manual.
+              O e-mail foi simulado no sistema. Utilize o WhatsApp Web para contato manual imediato.
             </p>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline"
-                className="rounded-none uppercase text-xs tracking-widest h-12 flex items-center gap-2 border-primary text-primary"
-                onClick={handleSendTwilio}
-                disabled={sendingMessage || !aiResult}
-              >
-                {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />} 
-                Enviar via Twilio
-              </Button>
-              <Button 
-                className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-none uppercase text-xs tracking-widest px-8 h-12 flex items-center gap-2"
-                onClick={() => {
-                  if (selectedAppt && aiResult) {
-                    const text = `${aiResult.message}%0A%0A*Orientações:*%0A${aiResult.guidance}`;
-                    window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
-                  }
-                }}
-              >
-                <Send className="h-4 w-4" /> WhatsApp Web
-              </Button>
-            </div>
+            <Button 
+              className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-none uppercase text-xs tracking-widest px-8 h-12 flex items-center gap-2"
+              onClick={() => {
+                if (selectedAppt && aiResult) {
+                  const text = `${aiResult.message}%0A%0A*Orientações:*%0A${aiResult.guidance}`;
+                  window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
+                }
+              }}
+            >
+              <Send className="h-4 w-4" /> Enviar via WhatsApp
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
