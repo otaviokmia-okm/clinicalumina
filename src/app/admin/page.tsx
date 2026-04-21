@@ -23,7 +23,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send, Smartphone } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -35,6 +35,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { sendTwilioMessage } from '@/app/actions/twilio-actions';
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
@@ -58,6 +59,7 @@ export default function AdminDashboard() {
   const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
   const [aiResult, setAiResult] = useState<{ message: string; guidance: string; emailSubject?: string; emailBody?: string } | null>(null);
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
@@ -100,10 +102,8 @@ export default function AdminDashboard() {
         emailBody: result.emailBody
       });
       
-      // Simulação de log de e-mail no console (visto no terminal do desenvolvedor)
       console.log(`%c[EMAIL SIMULATION] Sending to: ${appt.clientEmail}`, "color: #d4af37; font-weight: bold;");
       console.log(`Subject: ${result.emailSubject}`);
-      console.log(`Content: Generated successfully.`);
       
     } catch (error) {
       toast({
@@ -113,6 +113,38 @@ export default function AdminDashboard() {
       });
     } finally {
       setGeneratingAi(false);
+    }
+  };
+
+  const handleSendTwilio = async () => {
+    if (!selectedAppt || !aiResult) return;
+    
+    setSendingMessage(true);
+    try {
+      const fullMessage = `${aiResult.message}\n\nOrientações: ${aiResult.guidance}`;
+      // Tenta enviar via SMS (ou WhatsApp se configurado na action)
+      const response = await sendTwilioMessage(selectedAppt.clientPhone, fullMessage, true);
+      
+      if (response.success) {
+        toast({
+          title: 'Mensagem Enviada',
+          description: 'A confirmação foi enviada via Twilio com sucesso.'
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro no Twilio',
+          description: response.error
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro Crítico',
+        description: 'Não foi possível processar o envio via Twilio.'
+      });
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -128,7 +160,6 @@ export default function AdminDashboard() {
       description: `Agendamento marcado como ${newStatus}.`
     });
 
-    // Se confirmar, abre automaticamente o fluxo de IA para enviar WhatsApp/Email
     if (newStatus === 'Confirmado') {
       const appt = appointments?.find(a => a.id === id);
       if (appt) {
@@ -280,13 +311,6 @@ export default function AdminDashboard() {
               </TableBody>
             </Table>
           )}
-          
-          {appointments?.length === 0 && !isCollectionLoading && (
-            <div className="py-20 text-center space-y-4">
-              <Sparkles className="h-12 w-12 text-muted/30 mx-auto" />
-              <p className="text-muted-foreground font-light uppercase tracking-widest text-sm">Aguardando primeiras solicitações.</p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -314,15 +338,15 @@ export default function AdminDashboard() {
                       <Mail className="h-5 w-5 text-primary" />
                    </div>
                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">E-mail de Confirmação Enviado</p>
-                      <p className="text-[10px] text-muted-foreground italic mb-2">(Simulação de envio para: {selectedAppt?.clientEmail})</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">E-mail de Confirmação Pronto</p>
+                      <p className="text-[10px] text-muted-foreground italic mb-2">(Destinatário: {selectedAppt?.clientEmail})</p>
                       <p className="text-sm font-semibold mb-2">Assunto: {aiResult.emailSubject}</p>
                       <div className="text-[11px] text-muted-foreground opacity-80 border-t border-primary/10 pt-2 line-clamp-2" dangerouslySetInnerHTML={{ __html: aiResult.emailBody || '' }} />
                    </div>
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Mensagem WhatsApp (Copie ou Envie abaixo)</h4>
+                  <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Mensagem de Confirmação</h4>
                   <div className="p-6 bg-secondary/10 border-l-2 border-primary italic font-light leading-relaxed whitespace-pre-line text-sm">
                     {aiResult.message}
                   </div>
@@ -340,19 +364,30 @@ export default function AdminDashboard() {
 
           <DialogFooter className="sm:justify-between gap-4">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest max-w-[200px] leading-tight">
-              O e-mail foi disparado pelo sistema. Reforce o contato via WhatsApp para maior proximidade.
+              Utilize o Twilio para envio automatizado ou o WhatsApp Web para contato manual.
             </p>
-            <Button 
-              className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-none uppercase text-xs tracking-widest px-8 h-12 flex items-center gap-2"
-              onClick={() => {
-                if (selectedAppt && aiResult) {
-                  const text = `${aiResult.message}%0A%0A*Orientações Pre-Tratamento:*%0A${aiResult.guidance}`;
-                  window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
-                }
-              }}
-            >
-              <Send className="h-4 w-4" /> Enviar via WhatsApp
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                className="rounded-none uppercase text-xs tracking-widest h-12 flex items-center gap-2 border-primary text-primary"
+                onClick={handleSendTwilio}
+                disabled={sendingMessage || !aiResult}
+              >
+                {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />} 
+                Enviar via Twilio
+              </Button>
+              <Button 
+                className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-none uppercase text-xs tracking-widest px-8 h-12 flex items-center gap-2"
+                onClick={() => {
+                  if (selectedAppt && aiResult) {
+                    const text = `${aiResult.message}%0A%0A*Orientações:*%0A${aiResult.guidance}`;
+                    window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
+                  }
+                }}
+              >
+                <Send className="h-4 w-4" /> WhatsApp Web
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -361,11 +396,7 @@ export default function AdminDashboard() {
         <DialogContent className="max-w-3xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
             <DialogTitle className="text-3xl font-headline">Reagendar Atendimento</DialogTitle>
-            <DialogDescription className="uppercase text-[10px] tracking-widest font-bold">
-              Alterando horário para {reschedulingAppt?.clientName}
-            </DialogDescription>
           </DialogHeader>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
             <div className="bg-secondary/10 p-4 border border-border">
               <CalendarComponent
@@ -393,13 +424,9 @@ export default function AdminDashboard() {
               </RadioGroup>
             </div>
           </div>
-
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={() => setReschedulingAppt(null)} className="rounded-none uppercase text-xs tracking-widest">Descartar</Button>
-            <Button 
-              className="bg-primary hover:bg-primary/90 rounded-none uppercase text-xs tracking-widest px-8"
-              onClick={handleReschedule}
-            >
+            <Button className="bg-primary hover:bg-primary/90 rounded-none uppercase text-xs tracking-widest px-8" onClick={handleReschedule}>
               Salvar Alteração
             </Button>
           </DialogFooter>
