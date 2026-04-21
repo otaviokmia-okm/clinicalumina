@@ -36,7 +36,7 @@ export function Footer() {
           <ul className="space-y-4 text-sm font-light text-muted-foreground/60">
             <li>Rua da Elegância, 1000 - Jardins, SP</li>
             <li>contato@luminaestetica.com.br</li>
-            <li>(11) 99999-9999</li>
+            <li>+81 090 5452 1904</li>
           </ul>
         </div>
 

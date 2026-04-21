@@ -112,7 +112,7 @@ export function BookingWidget() {
   const getWhatsAppLink = () => {
     if (!bookingDetails) return '#';
     const message = `Olá! Acabei de solicitar um agendamento na Lumina Aesthetics.%0A%0A*Detalhes:*%0A👤 Nome: ${bookingDetails.clientName}%0A📅 Data: ${format(new Date(bookingDetails.date + 'T12:00:00'), "dd/MM/yyyy")}%0A⏰ Horário: ${bookingDetails.timeSlot}%0A✨ Serviço: ${bookingDetails.serviceName}%0A%0AAguardo a confirmação do concierge!`;
-    return `https://wa.me/558109054521904?text=${message}`;
+    return `https://wa.me/8109054521904?text=${message}`;
   };
 
   if (isSuccess) {
