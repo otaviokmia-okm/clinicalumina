@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -23,7 +22,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -56,7 +55,7 @@ export default function AdminDashboard() {
 
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
-  const [aiResult, setAiResult] = useState<{ message: string; guidance: string } | null>(null);
+  const [aiResult, setAiResult] = useState<{ message: string; guidance: string; emailSubject?: string; emailBody?: string } | null>(null);
   const [generatingAi, setGeneratingAi] = useState(false);
   
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
@@ -84,7 +83,7 @@ export default function AdminDashboard() {
     }
   }, [appointments, toast]);
 
-  const updateStatus = (id: string, newStatus: AppointmentStatus) => {
+  const updateStatus = async (id: string, newStatus: AppointmentStatus) => {
     const docRef = doc(db, 'appointments', id);
     updateDocumentNonBlocking(docRef, { 
       status: newStatus,
@@ -95,6 +94,32 @@ export default function AdminDashboard() {
       title: 'Status Atualizado',
       description: `Agendamento marcado como ${newStatus}.`
     });
+
+    // Envio automático de e-mail ao confirmar
+    if (newStatus === 'Confirmado') {
+      const appt = appointments?.find(a => a.id === id);
+      if (appt) {
+        try {
+          // Gerar conteúdo via IA
+          const result = await aiPersonalizedConfirmation({
+            clientName: appt.clientName,
+            serviceName: appt.serviceName
+          });
+
+          // Simulação de envio de e-mail (Log no console para o protótipo)
+          console.log(`[MAIL SIMULATION] Sending Email to ${appt.clientEmail}:`);
+          console.log(`Subject: ${result.emailSubject}`);
+          console.log(`Body: ${result.emailBody}`);
+
+          toast({
+            title: 'Confirmação Automática',
+            description: `E-mail de confirmação enviado para ${appt.clientEmail}.`,
+          });
+        } catch (error) {
+          console.error("Erro no envio automático de e-mail:", error);
+        }
+      }
+    }
   };
 
   const handleReschedule = () => {
@@ -125,7 +150,9 @@ export default function AdminDashboard() {
       });
       setAiResult({
         message: result.confirmationMessage,
-        guidance: result.preTreatmentGuidance
+        guidance: result.preTreatmentGuidance,
+        emailSubject: result.emailSubject,
+        emailBody: result.emailBody
       });
     } catch (error) {
       toast({
@@ -290,11 +317,22 @@ export default function AdminDashboard() {
             ) : aiResult ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="space-y-3">
-                  <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Mensagem</h4>
+                  <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Mensagem WhatsApp</h4>
                   <div className="p-6 bg-secondary/10 border-l-2 border-primary italic font-light leading-relaxed whitespace-pre-line">
                     {aiResult.message}
                   </div>
                 </div>
+                {aiResult.emailSubject && (
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary flex items-center gap-2">
+                      <Mail className="h-3 w-3" /> Visualização do E-mail Enviado
+                    </h4>
+                    <div className="p-4 bg-secondary/5 border border-border text-xs rounded-none">
+                      <p className="font-bold mb-2">Assunto: {aiResult.emailSubject}</p>
+                      <div className="opacity-70 line-clamp-3 overflow-hidden" dangerouslySetInnerHTML={{ __html: aiResult.emailBody || '' }} />
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-3">
                   <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Orientações</h4>
                   <div className="p-6 bg-secondary/5 text-sm leading-relaxed text-muted-foreground">
@@ -316,7 +354,7 @@ export default function AdminDashboard() {
                 setSelectedAppt(null);
               }}
             >
-              Enviar via WhatsApp para Cliente
+              Reforçar via WhatsApp
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for generating personalized confirmation messages and pre-treatment guidance.
+ * @fileOverview A Genkit flow for generating personalized confirmation messages and email content.
  *
  * - aiPersonalizedConfirmation - A function that handles the generation of personalized messages.
  * - AIPersonalizedConfirmationInput - The input type for the aiPersonalizedConfirmation function.
@@ -21,10 +21,16 @@ export type AIPersonalizedConfirmationInput = z.infer<
 const AIPersonalizedConfirmationOutputSchema = z.object({
   confirmationMessage: z
     .string()
-    .describe('A personalized confirmation message for the client.'),
+    .describe('A personalized confirmation message for WhatsApp.'),
   preTreatmentGuidance: z
     .string()
     .describe('Detailed pre-treatment guidance for the booked service.'),
+  emailSubject: z
+    .string()
+    .describe('A professional and elegant email subject line.'),
+  emailBody: z
+    .string()
+    .describe('The full HTML body for the confirmation email, maintaining the Lumina luxury tone.'),
 });
 export type AIPersonalizedConfirmationOutput = z.infer<
   typeof AIPersonalizedConfirmationOutputSchema
@@ -41,19 +47,18 @@ const aiPersonalizedConfirmationPrompt = ai.definePrompt({
   input: {schema: AIPersonalizedConfirmationInputSchema},
   output: {schema: AIPersonalizedConfirmationOutputSchema},
   prompt: `You are an assistant for Lumina Aesthetics, a high-end aesthetic clinic specializing in 'Quiet Luxury'.
-Your task is to generate a personalized confirmation message and pre-treatment guidance for a client who has booked a service.
-Maintain a sophisticated, elegant, and reassuring tone throughout the message.
+Your task is to generate a personalized confirmation message (for WhatsApp) and a formal email for a client who has booked a service.
+Maintain a sophisticated, elegant, and reassuring tone throughout.
 
 Client Name: {{{clientName}}}
 Booked Service: {{{serviceName}}}
 
-Craft a confirmation message that welcomes the client, confirms their booking for the specified service, and expresses anticipation for their visit.
+1. WhatsApp Message: Concise, welcoming, and elegant.
+2. Guidance: Specific tips for the service.
+3. Email Subject: Professional and exclusive.
+4. Email Body: A detailed HTML email. Use professional formatting. Include greetings, the confirmation of the service, a section for guidance, and a signature from 'Concierge Lumina Aesthetics'.
 
-Then, provide clear, concise, and helpful pre-treatment guidance specific to the booked service. This guidance should prepare the client for their experience, ensuring comfort and optimal results. If you don't have specific guidance, provide general advice for any aesthetic treatment, emphasizing comfort and communication with the specialists.
-
-Example Confirmation Message: "Dear [Client Name], we are delighted to confirm your upcoming [Service Name] at Lumina Aesthetics. We look forward to welcoming you..."
-
-Example Pre-Treatment Guidance: "To ensure the most serene and effective experience for your [Service Name], we kindly recommend..."
+Example Email Subject: "Sua Experiência Lumina: Agendamento Confirmado - [Service Name]"
 `,
 });
 
