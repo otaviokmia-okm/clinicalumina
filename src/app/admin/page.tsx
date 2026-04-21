@@ -34,6 +34,7 @@ import { ptBR } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
@@ -67,7 +68,6 @@ export default function AdminDashboard() {
     }
   }, [user, isUserLoading, router]);
 
-  // Notificação visual quando um novo agendamento chega em tempo real
   useEffect(() => {
     if (appointments && appointments.length > prevCount.current) {
       if (prevCount.current > 0) {
@@ -267,7 +267,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* AI Content Modal */}
       <Dialog open={!!selectedAppt} onOpenChange={(open) => !open && setSelectedAppt(null)}>
         <DialogContent className="max-w-2xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
@@ -317,7 +316,6 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Reschedule Modal */}
       <Dialog open={!!reschedulingAppt} onOpenChange={(open) => !open && setReschedulingAppt(null)}>
         <DialogContent className="max-w-3xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
