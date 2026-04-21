@@ -7,20 +7,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Sparkles, ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/firebase';
+import { signInAnonymously } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const auth = useAuth();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulação de autenticação - qualquer credencial funciona no protótipo
-    setTimeout(() => {
+    
+    try {
+      // Para o protótipo, realizamos um login anônimo para satisfazer as regras do Firestore
+      await signInAnonymously(auth);
       router.push('/admin');
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro de Autenticação',
+        description: 'Não foi possível acessar o ambiente administrativo.'
+      });
+      setLoading(false);
+    }
   };
 
   return (

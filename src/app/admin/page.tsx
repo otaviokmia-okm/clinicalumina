@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navigation } from '@/components/Navigation';
 import { 
   Table, 
@@ -22,11 +23,11 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar, Sparkles, Wand2, Loader2, Phone } from 'lucide-react';
+import { Check, X, Calendar, Sparkles, Wand2, Loader2 } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, doc, orderBy, query } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -40,14 +41,18 @@ const TIME_SLOTS = [
 
 export default function AdminDashboard() {
   const db = useFirestore();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
   const { toast } = useToast();
   
   // Agendamentos em tempo real do Firestore
+  // Só iniciamos a query quando o usuário estiver autenticado
   const appointmentsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
     return query(collection(db, 'appointments'), orderBy('createdAt', 'desc'));
-  }, [db]);
+  }, [db, user]);
   
-  const { data: appointments, isLoading } = useCollection<Appointment>(appointmentsQuery);
+  const { data: appointments, isLoading: isCollectionLoading } = useCollection<Appointment>(appointmentsQuery);
 
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
@@ -57,6 +62,13 @@ export default function AdminDashboard() {
   // Estados para reagendamento
   const [newDate, setNewDate] = useState<Date | undefined>(new Date());
   const [newSlot, setNewSlot] = useState<string>('');
+
+  // Redireciona se não estiver logado
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/admin/login');
+    }
+  }, [user, isUserLoading, router]);
 
   const updateStatus = (id: string, newStatus: AppointmentStatus) => {
     const docRef = doc(db, 'appointments', id);
@@ -118,6 +130,17 @@ export default function AdminDashboard() {
     }
   };
 
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/10">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-10 w-10 text-primary animate-spin mx-auto" />
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Autenticando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-secondary/10 pb-20">
       <Navigation />
@@ -140,7 +163,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="bg-background shadow-xl border border-border/40 overflow-hidden">
-          {isLoading ? (
+          {isCollectionLoading ? (
             <div className="py-20 flex flex-col items-center gap-4">
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Carregando agendamentos...</p>
@@ -221,7 +244,7 @@ export default function AdminDashboard() {
             </Table>
           )}
           
-          {appointments?.length === 0 && !isLoading && (
+          {appointments?.length === 0 && !isCollectionLoading && (
             <div className="py-20 text-center space-y-4">
               <Sparkles className="h-12 w-12 text-muted/30 mx-auto" />
               <p className="text-muted-foreground font-light uppercase tracking-widest text-sm">Nenhum agendamento encontrado.</p>
