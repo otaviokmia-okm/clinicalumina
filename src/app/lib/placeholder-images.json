@@ -4,8 +4,8 @@
     {
       "id": "main-logo",
       "description": "Logotipo oficial da Lumina Aesthetics",
-      "imageUrl": "https://picsum.photos/seed/lumina-brand-logo/400/200",
-      "imageHint": "minimalist logo"
+      "imageUrl": "/assets/images/logo.png",
+      "imageHint": "minimalist luxury logo"
     },
     {
       "id": "hero-main",
