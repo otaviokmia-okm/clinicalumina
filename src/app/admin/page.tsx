@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navigation } from '@/components/Navigation';
 import { 
@@ -23,7 +23,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar, Sparkles, Wand2, Loader2 } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -44,9 +44,8 @@ export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const prevCount = useRef<number>(0);
   
-  // Agendamentos em tempo real do Firestore
-  // Só iniciamos a query quando o usuário estiver autenticado
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collection(db, 'appointments'), orderBy('createdAt', 'desc'));
@@ -59,16 +58,28 @@ export default function AdminDashboard() {
   const [aiResult, setAiResult] = useState<{ message: string; guidance: string } | null>(null);
   const [generatingAi, setGeneratingAi] = useState(false);
   
-  // Estados para reagendamento
   const [newDate, setNewDate] = useState<Date | undefined>(new Date());
   const [newSlot, setNewSlot] = useState<string>('');
 
-  // Redireciona se não estiver logado
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/admin/login');
     }
   }, [user, isUserLoading, router]);
+
+  // Notificação visual quando um novo agendamento chega em tempo real
+  useEffect(() => {
+    if (appointments && appointments.length > prevCount.current) {
+      if (prevCount.current > 0) {
+        toast({
+          title: "Novo Agendamento!",
+          description: "Uma nova solicitação acaba de chegar no sistema.",
+          action: <Badge className="bg-primary animate-pulse">NOVO</Badge>
+        });
+      }
+      prevCount.current = appointments.length;
+    }
+  }, [appointments, toast]);
 
   const updateStatus = (id: string, newStatus: AppointmentStatus) => {
     const docRef = doc(db, 'appointments', id);
@@ -87,7 +98,8 @@ export default function AdminDashboard() {
     updateDocumentNonBlocking(docRef, { 
       date: format(newDate, 'yyyy-MM-dd'),
       timeSlot: newSlot,
-      status: 'Remarcado'
+      status: 'Remarcado',
+      updatedAt: new Date().toISOString()
     });
 
     toast({
@@ -133,10 +145,7 @@ export default function AdminDashboard() {
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/10">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-10 w-10 text-primary animate-spin mx-auto" />
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Autenticando...</p>
-        </div>
+        <Loader2 className="h-10 w-10 text-primary animate-spin" />
       </div>
     );
   }
@@ -154,19 +163,21 @@ export default function AdminDashboard() {
           <div className="flex gap-4">
             <div className="px-4 py-2 bg-background border border-border shadow-sm flex items-center gap-4">
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total Pendente</p>
-                <p className="font-headline text-xl">{appointments?.filter(a => a.status === 'Pendente').length || 0}</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Novas Solicitações</p>
+                <p className="font-headline text-xl text-primary">{appointments?.filter(a => a.status === 'Pendente').length || 0}</p>
               </div>
-              <Calendar className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <Bell className={cn("h-5 w-5 text-primary", appointments?.some(a => a.status === 'Pendente') && "animate-bounce")} />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-background shadow-xl border border-border/40 overflow-hidden">
+        <div className="bg-background shadow-xl border border-border/40 overflow-hidden rounded-none">
           {isCollectionLoading ? (
             <div className="py-20 flex flex-col items-center gap-4">
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Carregando agendamentos...</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Acessando registros...</p>
             </div>
           ) : (
             <Table>
@@ -181,28 +192,30 @@ export default function AdminDashboard() {
               </TableHeader>
               <TableBody>
                 {appointments?.map((appt) => (
-                  <TableRow key={appt.id} className="hover:bg-secondary/5 transition-colors">
+                  <TableRow key={appt.id} className="hover:bg-secondary/5 transition-colors group">
                     <TableCell className="py-6">
-                      <p className="font-semibold">{appt.clientName}</p>
-                      <p className="text-xs text-muted-foreground">{appt.clientPhone}</p>
+                      <p className="font-semibold text-sm">{appt.clientName}</p>
+                      <p className="text-[10px] text-muted-foreground font-light">{appt.clientPhone}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="border-primary/20 text-primary font-light">{appt.serviceName}</Badge>
+                      <Badge variant="outline" className="border-primary/20 text-primary font-light text-[10px]">{appt.serviceName}</Badge>
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm">{appt.date}</p>
-                      <p className="text-xs text-muted-foreground">{appt.timeSlot}</p>
+                      <p className="text-xs">{format(new Date(appt.date + 'T12:00:00'), "dd/MM/yyyy")}</p>
+                      <p className="text-[10px] text-muted-foreground">{appt.timeSlot}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getBadgeColor(appt.status)}>{appt.status}</Badge>
+                      <Badge variant={getBadgeColor(appt.status)} className="text-[9px] uppercase tracking-widest px-2 py-0">
+                        {appt.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-1">
                         <Button 
                           size="sm" 
                           variant="ghost" 
                           onClick={() => generateAIContent(appt)}
-                          className="text-primary hover:bg-primary/10 flex items-center gap-1"
+                          className="text-primary hover:bg-primary/10 h-8 w-8 p-0"
                           title="Gerar Confirmação IA"
                         >
                           <Wand2 className="h-3.5 w-3.5" />
@@ -221,11 +234,12 @@ export default function AdminDashboard() {
                           onClick={() => {
                             setReschedulingAppt(appt);
                             setNewSlot(appt.timeSlot);
+                            setNewDate(new Date(appt.date + 'T12:00:00'));
                           }}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 rounded-none border-border"
                           title="Remarcar"
                         >
-                          <Calendar className="h-4 w-4" />
+                          <CalendarIcon className="h-4 w-4" />
                         </Button>
                         <Button 
                           size="sm" 
@@ -247,7 +261,7 @@ export default function AdminDashboard() {
           {appointments?.length === 0 && !isCollectionLoading && (
             <div className="py-20 text-center space-y-4">
               <Sparkles className="h-12 w-12 text-muted/30 mx-auto" />
-              <p className="text-muted-foreground font-light uppercase tracking-widest text-sm">Nenhum agendamento encontrado.</p>
+              <p className="text-muted-foreground font-light uppercase tracking-widest text-sm">Aguardando primeiras solicitações.</p>
             </div>
           )}
         </div>
@@ -272,7 +286,7 @@ export default function AdminDashboard() {
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="space-y-3">
                   <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Mensagem</h4>
-                  <div className="p-6 bg-secondary/10 border-l-2 border-primary italic font-light leading-relaxed">
+                  <div className="p-6 bg-secondary/10 border-l-2 border-primary italic font-light leading-relaxed whitespace-pre-line">
                     {aiResult.message}
                   </div>
                 </div>
@@ -290,11 +304,14 @@ export default function AdminDashboard() {
             <Button 
               className="bg-primary hover:bg-primary/90 rounded-none uppercase text-xs tracking-widest w-full h-12"
               onClick={() => {
-                toast({ title: 'Mensagem Enviada', description: 'Conteúdo enviado via WhatsApp.' });
+                if (selectedAppt && aiResult) {
+                  const text = `${aiResult.message}%0A%0A*Orientações Pre-Tratamento:*%0A${aiResult.guidance}`;
+                  window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
+                }
                 setSelectedAppt(null);
               }}
             >
-              Enviar via WhatsApp
+              Enviar via WhatsApp para Cliente
             </Button>
           </DialogFooter>
         </DialogContent>

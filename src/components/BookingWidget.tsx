@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, User, Phone, Mail, CheckCircle2, Loader2, CalendarX2 } from 'lucide-react';
+import { Clock, User, Phone, Mail, CheckCircle2, Loader2, CalendarX2, MessageCircle } from 'lucide-react';
 import { format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFirestore, useAuth, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
@@ -26,11 +26,11 @@ export function BookingWidget() {
   const [slot, setSlot] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<any>(null);
   const { toast } = useToast();
   const db = useFirestore();
   const auth = useAuth();
 
-  // Consulta agendamentos existentes para a data selecionada para bloquear horários ocupados
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !date) return null;
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -42,7 +42,6 @@ export function BookingWidget() {
 
   const { data: existingAppts, isLoading: isLoadingAppts } = useCollection<Appointment>(appointmentsQuery);
 
-  // Define quais horários estão ocupados (Confirmados ou Remarcados)
   const busySlots = existingAppts
     ?.filter(appt => appt.status === 'Confirmado' || appt.status === 'Remarcado')
     .map(appt => appt.timeSlot) || [];
@@ -60,15 +59,6 @@ export function BookingWidget() {
       return;
     }
 
-    if (busySlots.includes(slot)) {
-      toast({
-        variant: 'destructive',
-        title: 'Horário Indisponível',
-        description: 'Este horário acabou de ser reservado. Por favor, escolha outro.'
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -77,9 +67,12 @@ export function BookingWidget() {
       }
 
       const formData = new FormData(formElement);
+      const name = formData.get('name') as string;
+      const phone = formData.get('phone') as string;
+      
       const appointmentData = {
-        clientName: formData.get('name') as string,
-        clientPhone: formData.get('phone') as string,
+        clientName: name,
+        clientPhone: phone,
         clientEmail: formData.get('email') as string,
         serviceId: '1',
         serviceName: 'Harmonização Facial',
@@ -93,17 +86,18 @@ export function BookingWidget() {
       const appointmentsRef = collection(db, 'appointments');
       addDocumentNonBlocking(appointmentsRef, appointmentData);
 
+      setBookingDetails(appointmentData);
       setIsSuccess(true);
       toast({
         title: 'Solicitação Enviada',
-        description: 'Recebemos seu pedido. Em breve entraremos em contato para confirmar.'
+        description: 'Recebemos seu pedido. Em breve entraremos em contato.'
       });
     } catch (error) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Erro no Agendamento',
-        description: 'Não foi possível salvar seu agendamento. Tente novamente.'
+        description: 'Não foi possível salvar seu agendamento.'
       });
     } finally {
       setLoading(false);
@@ -115,15 +109,29 @@ export function BookingWidget() {
     return startOfDay(date) < today || date.getDay() === 0;
   };
 
+  const getWhatsAppLink = () => {
+    if (!bookingDetails) return '#';
+    const message = `Olá! Acabei de solicitar um agendamento na Lumina Aesthetics.%0A%0A*Detalhes:*%0A👤 Nome: ${bookingDetails.clientName}%0A📅 Data: ${format(new Date(bookingDetails.date + 'T12:00:00'), "dd/MM/yyyy")}%0A⏰ Horário: ${bookingDetails.timeSlot}%0A✨ Serviço: ${bookingDetails.serviceName}%0A%0AAguardo a confirmação do concierge!`;
+    return `https://wa.me/558109054521904?text=${message}`;
+  };
+
   if (isSuccess) {
     return (
-      <div className="bg-secondary/40 p-12 text-center rounded-sm border border-primary/20 animate-in fade-in zoom-in duration-500 max-w-2xl mx-auto my-24">
+      <div className="bg-white p-12 text-center rounded-none border border-primary/20 animate-in fade-in zoom-in duration-500 max-w-2xl mx-auto my-24 shadow-2xl">
         <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-6" />
         <h3 className="text-3xl font-headline mb-4">Experiência Solicitada</h3>
-        <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-          Sua solicitação de agendamento para {date && format(date, "dd 'de' MMMM", { locale: ptBR })} às {slot} foi registrada com sucesso.
+        <p className="text-muted-foreground mb-8 max-w-md mx-auto font-light">
+          Sua solicitação para {bookingDetails && format(new Date(bookingDetails.date + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })} às {slot} foi registrada.
         </p>
-        <Button onClick={() => setIsSuccess(false)} variant="outline" className="border-primary text-primary">Voltar</Button>
+        
+        <div className="space-y-4">
+          <Button asChild className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-14 rounded-none uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+            <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="h-5 w-5" /> Falar com o Concierge Agora
+            </a>
+          </Button>
+          <Button onClick={() => setIsSuccess(false)} variant="ghost" className="uppercase text-[10px] tracking-widest">Voltar para o site</Button>
+        </div>
       </div>
     );
   }
@@ -135,7 +143,7 @@ export function BookingWidget() {
           <div className="space-y-8">
             <h2 className="text-4xl md:text-5xl font-headline">Reserve sua <br /><span className="text-primary italic">Lumina Experience</span></h2>
             <p className="text-muted-foreground font-light leading-relaxed">
-              Selecione o melhor momento para sua visita. Nosso concierge entrará em contato em até 24 horas para personalizar seu atendimento.
+              Selecione o melhor momento para sua visita. Nosso concierge entrará em contato para personalizar seu atendimento.
             </p>
             
             <div className="bg-background p-6 shadow-sm border border-border/40 flex justify-center">
@@ -144,7 +152,7 @@ export function BookingWidget() {
                 selected={date}
                 onSelect={(d) => {
                   setDate(d);
-                  setSlot(''); // Reseta o horário ao mudar a data
+                  setSlot('');
                 }}
                 className="rounded-md border-none w-full"
                 locale={ptBR}
@@ -187,11 +195,6 @@ export function BookingWidget() {
                   );
                 })}
               </RadioGroup>
-              {busySlots.length === TIME_SLOTS.length && (
-                <p className="text-[10px] text-destructive uppercase tracking-widest font-bold text-center mt-2">
-                  Lamentamos, mas todos os horários para este dia estão reservados.
-                </p>
-              )}
             </div>
 
             <div className="space-y-4">
@@ -224,13 +227,13 @@ export function BookingWidget() {
             <Button 
               type="submit" 
               disabled={loading || !date || !slot || busySlots.includes(slot)} 
-              className="w-full h-14 text-lg uppercase tracking-widest bg-primary hover:bg-primary/90 transition-all"
+              className="w-full h-14 text-sm uppercase tracking-widest bg-primary hover:bg-primary/90 transition-all rounded-none"
             >
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Solicitar Agendamento"}
             </Button>
             
             <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
-              Ao agendar, você concorda com nossos termos de privacidade e serviço.
+              Garantimos total privacidade e discrição com seus dados.
             </p>
           </form>
         </div>
