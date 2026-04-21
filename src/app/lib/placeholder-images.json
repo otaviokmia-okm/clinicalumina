@@ -10,8 +10,8 @@
     {
       "id": "hero-main",
       "description": "Imagem cinematográfica do topo",
-      "imageUrl": "/assets/images/hero-modelo",
-      "imageHint": "luxury skin"
+      "imageUrl": "/assets/images/hero-modelo.png",
+      "imageHint": "luxury skin aesthetics"
     },
     {
       "id": "service-facial",
