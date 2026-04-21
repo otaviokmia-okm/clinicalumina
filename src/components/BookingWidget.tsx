@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, User, Phone, Mail, CheckCircle2, Loader2 } from 'lucide-react';
+import { Clock, User, Phone, Mail, CheckCircle2, Loader2, CalendarX2 } from 'lucide-react';
 import { format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useFirestore, useAuth, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore, useAuth, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
+import { Appointment } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
@@ -28,10 +30,25 @@ export function BookingWidget() {
   const db = useFirestore();
   const auth = useAuth();
 
+  // Consulta agendamentos existentes para a data selecionada para bloquear horários ocupados
+  const appointmentsQuery = useMemoFirebase(() => {
+    if (!db || !date) return null;
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return query(
+      collection(db, 'appointments'),
+      where('date', '==', dateStr)
+    );
+  }, [db, date]);
+
+  const { data: existingAppts, isLoading: isLoadingAppts } = useCollection<Appointment>(appointmentsQuery);
+
+  // Define quais horários estão ocupados (Confirmados ou Remarcados)
+  const busySlots = existingAppts
+    ?.filter(appt => appt.status === 'Confirmado' || appt.status === 'Remarcado')
+    .map(appt => appt.timeSlot) || [];
+
   const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Capturamos o formulário imediatamente antes de qualquer await
     const formElement = e.currentTarget;
 
     if (!date || !slot) {
@@ -43,10 +60,18 @@ export function BookingWidget() {
       return;
     }
 
+    if (busySlots.includes(slot)) {
+      toast({
+        variant: 'destructive',
+        title: 'Horário Indisponível',
+        description: 'Este horário acabou de ser reservado. Por favor, escolha outro.'
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Garantir que o usuário está "logado" anonimamente para respeitar as regras do Firestore
       if (!auth.currentUser) {
         await signInAnonymously(auth);
       }
@@ -56,8 +81,8 @@ export function BookingWidget() {
         clientName: formData.get('name') as string,
         clientPhone: formData.get('phone') as string,
         clientEmail: formData.get('email') as string,
-        serviceId: '1', // Default para protótipo
-        serviceName: 'Harmonização Facial', // Default para protótipo
+        serviceId: '1',
+        serviceName: 'Harmonização Facial',
         date: format(date, 'yyyy-MM-dd'),
         timeSlot: slot,
         status: 'Pendente' as const,
@@ -117,7 +142,10 @@ export function BookingWidget() {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={(d) => {
+                  setDate(d);
+                  setSlot(''); // Reseta o horário ao mudar a data
+                }}
                 className="rounded-md border-none w-full"
                 locale={ptBR}
                 disabled={isDateDisabled}
@@ -127,20 +155,43 @@ export function BookingWidget() {
 
           <form onSubmit={handleBooking} className="bg-background p-10 shadow-xl space-y-8 border border-border/20">
             <div className="space-y-4">
-              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Horários Disponíveis</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Horários Disponíveis</Label>
+                {isLoadingAppts && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+              </div>
+              
               <RadioGroup value={slot} onValueChange={setSlot} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {TIME_SLOTS.map((time) => (
-                  <div key={time}>
-                    <RadioGroupItem value={time} id={time} className="peer sr-only" />
-                    <Label
-                      htmlFor={time}
-                      className="flex items-center justify-center p-3 text-sm border border-border peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-secondary cursor-pointer transition-all rounded-none"
-                    >
-                      {time}
-                    </Label>
-                  </div>
-                ))}
+                {TIME_SLOTS.map((time) => {
+                  const isBusy = busySlots.includes(time);
+                  return (
+                    <div key={time} className="relative">
+                      <RadioGroupItem 
+                        value={time} 
+                        id={time} 
+                        disabled={isBusy}
+                        className="peer sr-only" 
+                      />
+                      <Label
+                        htmlFor={time}
+                        className={cn(
+                          "flex items-center justify-center p-3 text-sm border border-border transition-all rounded-none",
+                          isBusy 
+                            ? "bg-secondary/50 text-muted-foreground cursor-not-allowed border-dashed opacity-50" 
+                            : "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-secondary cursor-pointer"
+                        )}
+                      >
+                        {isBusy ? <CalendarX2 className="h-3 w-3 mr-1 opacity-50" /> : null}
+                        {time}
+                      </Label>
+                    </div>
+                  );
+                })}
               </RadioGroup>
+              {busySlots.length === TIME_SLOTS.length && (
+                <p className="text-[10px] text-destructive uppercase tracking-widest font-bold text-center mt-2">
+                  Lamentamos, mas todos os horários para este dia estão reservados.
+                </p>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -170,7 +221,11 @@ export function BookingWidget() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full h-14 text-lg uppercase tracking-widest bg-primary hover:bg-primary/90 transition-all">
+            <Button 
+              type="submit" 
+              disabled={loading || !date || !slot || busySlots.includes(slot)} 
+              className="w-full h-14 text-lg uppercase tracking-widest bg-primary hover:bg-primary/90 transition-all"
+            >
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Solicitar Agendamento"}
             </Button>
             
