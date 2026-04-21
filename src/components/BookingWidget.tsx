@@ -8,9 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, User, Phone, Mail, CheckCircle2 } from 'lucide-react';
+import { Clock, User, Phone, Mail, CheckCircle2, Loader2 } from 'lucide-react';
 import { format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useFirestore, useAuth, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
@@ -22,6 +25,8 @@ export function BookingWidget() {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
+  const db = useFirestore();
+  const auth = useAuth();
 
   const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,30 +40,59 @@ export function BookingWidget() {
     }
 
     setLoading(true);
-    // Simulação de API
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setLoading(false);
-    setIsSuccess(true);
-    toast({
-      title: 'Solicitação Enviada',
-      description: 'Recebemos seu pedido. Em breve entraremos em contato para confirmar.'
-    });
+
+    try {
+      // Garantir que o usuário está "logado" anonimamente para respeitar as regras do Firestore
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+
+      const formData = new FormData(e.currentTarget);
+      const appointmentData = {
+        clientName: formData.get('name') as string,
+        clientPhone: formData.get('phone') as string,
+        clientEmail: formData.get('email') as string,
+        serviceId: '1', // Default para protótipo
+        serviceName: 'Harmonização Facial', // Default para protótipo
+        date: format(date, 'yyyy-MM-dd'),
+        timeSlot: slot,
+        status: 'Pendente',
+        clientId: auth.currentUser?.uid || 'guest',
+        createdAt: new Date().toISOString()
+      };
+
+      const appointmentsRef = collection(db, 'appointments');
+      addDocumentNonBlocking(appointmentsRef, appointmentData);
+
+      setIsSuccess(true);
+      toast({
+        title: 'Solicitação Enviada',
+        description: 'Recebemos seu pedido. Em breve entraremos em contato para confirmar.'
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro no Agendamento',
+        description: 'Não foi possível salvar seu agendamento. Tente novamente.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isDateDisabled = (date: Date) => {
     const today = startOfDay(new Date());
-    // Desativa dias passados e domingos (0)
     return startOfDay(date) < today || date.getDay() === 0;
   };
 
   if (isSuccess) {
     return (
-      <div className="bg-secondary/40 p-12 text-center rounded-sm border border-primary/20 animate-in fade-in zoom-in duration-500">
+      <div className="bg-secondary/40 p-12 text-center rounded-sm border border-primary/20 animate-in fade-in zoom-in duration-500 max-w-2xl mx-auto my-24">
         <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-6" />
         <h3 className="text-3xl font-headline mb-4">Experiência Solicitada</h3>
         <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-          Sua solicitação de agendamento para {date && format(date, "dd 'de' MMMM", { locale: ptBR })} às {slot} foi registrada como 'Pendente'.
+          Sua solicitação de agendamento para {date && format(date, "dd 'de' MMMM", { locale: ptBR })} às {slot} foi registrada com sucesso.
         </p>
         <Button onClick={() => setIsSuccess(false)} variant="outline" className="border-primary text-primary">Voltar</Button>
       </div>
@@ -110,7 +144,7 @@ export function BookingWidget() {
                 <Label htmlFor="name" className="text-xs uppercase tracking-widest">Nome Completo</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="name" required placeholder="Ex: Maria Silva" className="pl-10 rounded-none bg-secondary/10" />
+                  <Input name="name" id="name" required placeholder="Ex: Maria Silva" className="pl-10 rounded-none bg-secondary/10" />
                 </div>
               </div>
 
@@ -119,21 +153,21 @@ export function BookingWidget() {
                   <Label htmlFor="phone" className="text-xs uppercase tracking-widest">Telefone</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="phone" required type="tel" placeholder="(11) 99999-9999" className="pl-10 rounded-none bg-secondary/10" />
+                    <Input name="phone" id="phone" required type="tel" placeholder="(11) 99999-9999" className="pl-10 rounded-none bg-secondary/10" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-xs uppercase tracking-widest">E-mail</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="email" required type="email" placeholder="contato@exemplo.com" className="pl-10 rounded-none bg-secondary/10" />
+                    <Input name="email" id="email" required type="email" placeholder="contato@exemplo.com" className="pl-10 rounded-none bg-secondary/10" />
                   </div>
                 </div>
               </div>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full h-14 text-lg uppercase tracking-widest bg-primary hover:bg-primary/90 transition-all">
-              {loading ? "Processando..." : "Solicitar Agendamento"}
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Solicitar Agendamento"}
             </Button>
             
             <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
