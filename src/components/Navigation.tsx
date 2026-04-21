@@ -33,37 +33,42 @@ export function Navigation() {
     <nav className={`fixed top-0 w-full z-50 transition-all duration-700 ${
       scrolled 
         ? 'bg-background/95 backdrop-blur-md py-4 border-b border-primary/10 shadow-lg' 
-        : 'bg-foreground/20 backdrop-blur-sm py-6 border-b border-white/5'
+        : 'bg-foreground/40 backdrop-blur-sm py-6 border-b border-white/5'
     }`}>
       <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
         <Link href="/" className="relative flex items-center group">
-          {logoData && !logoError ? (
-            <div className="relative h-14 w-56 transition-transform group-hover:scale-105">
-              <Image 
-                src={logoData.imageUrl} 
-                alt="Lumina Aesthetics Logo" 
-                fill 
-                className="object-contain"
-                priority
-                onError={() => setLogoError(true)}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center transition-transform group-hover:scale-105">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <span className="font-headline text-3xl tracking-[0.25em] uppercase text-white">Lumina</span>
+          {/* Logo Circular Frame */}
+          <div className="relative h-16 w-16 md:h-20 md:w-20 rounded-full border border-primary/30 p-1 bg-white/10 backdrop-blur-sm overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
+            {logoData && !logoError ? (
+              <div className="relative h-full w-full rounded-full overflow-hidden">
+                <Image 
+                  src={logoData.imageUrl} 
+                  alt="Lumina Aesthetics Logo" 
+                  fill 
+                  className="object-cover"
+                  priority
+                  onError={() => setLogoError(true)}
+                />
               </div>
-              <span className="text-[8px] uppercase tracking-[0.6em] text-primary mt-1 font-bold ml-4">Aesthetics</span>
-            </div>
-          )}
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center">
+                <Sparkles className="h-4 w-4 text-primary mb-1" />
+                <span className="font-headline text-[10px] md:text-xs tracking-[0.1em] leading-none uppercase text-white font-bold">Lumina</span>
+              </div>
+            )}
+          </div>
+          {/* Text Logo for branding next to frame */}
+          <div className="ml-4 hidden sm:flex flex-col">
+            <span className="font-headline text-2xl tracking-[0.2em] uppercase text-white drop-shadow-md">Lumina</span>
+            <span className="text-[7px] uppercase tracking-[0.5em] text-primary font-black">Aesthetics</span>
+          </div>
         </Link>
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-10">
           <Link href="#services" className="text-[11px] uppercase tracking-[0.3em] font-black text-white hover:text-primary transition-colors drop-shadow-sm">Serviços</Link>
           <Link href="#about" className="text-[11px] uppercase tracking-[0.3em] font-black text-white hover:text-primary transition-colors drop-shadow-sm">O Conceito</Link>
-          <Button asChild variant="outline" className="bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground rounded-none px-10 h-12 text-[10px] uppercase tracking-[0.3em] font-black transition-all">
+          <Button asChild variant="outline" className="bg-primary/20 border-primary/50 text-white hover:bg-primary hover:text-primary-foreground rounded-none px-10 h-12 text-[10px] uppercase tracking-[0.3em] font-black transition-all backdrop-blur-md">
             <Link href="#booking">Agendar Visita</Link>
           </Button>
           <Link href="/admin/login" className="flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] text-white/60 hover:text-primary transition-colors border-l pl-8 border-white/20">
@@ -81,7 +86,12 @@ export function Navigation() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-background border-l-border/30 w-full sm:max-w-md">
               <div className="flex flex-col h-full py-20 px-8 text-center space-y-12">
-                <Link href="/" className="group">
+                <Link href="/" className="group flex flex-col items-center">
+                   <div className="h-24 w-24 rounded-full border border-primary/20 p-1 mb-6">
+                      <div className="h-full w-full rounded-full bg-secondary/20 flex items-center justify-center">
+                        <Sparkles className="h-8 w-8 text-primary" />
+                      </div>
+                   </div>
                   <span className="font-headline text-5xl tracking-[0.3em] uppercase block text-foreground">Lumina</span>
                   <span className="text-[10px] uppercase tracking-[0.5em] text-primary font-bold mt-2 block">Aesthetics</span>
                 </Link>

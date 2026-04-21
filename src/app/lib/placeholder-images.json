@@ -16,26 +16,26 @@
     {
       "id": "service-facial",
       "description": "Procedimento de Harmonização Facial",
-      "imageUrl": "https://picsum.photos/seed/facial-luxury/800/1000",
-      "imageHint": "facial aesthetics"
+      "imageUrl": "https://picsum.photos/seed/lumina-facial/800/1000",
+      "imageHint": "facial injection"
     },
     {
       "id": "service-bio",
       "description": "Aplicação de Bioestimuladores",
-      "imageUrl": "https://picsum.photos/seed/bio-luxury/800/1000",
-      "imageHint": "skincare medical"
+      "imageUrl": "https://picsum.photos/seed/lumina-bio/800/1000",
+      "imageHint": "dermatologist treatment"
     },
     {
       "id": "service-laser",
       "description": "Tecnologia Laser de última geração",
-      "imageUrl": "https://picsum.photos/seed/laser-luxury/800/1000",
-      "imageHint": "laser technology"
+      "imageUrl": "https://picsum.photos/seed/lumina-laser/800/1000",
+      "imageHint": "laser skincare"
     },
     {
       "id": "service-spa",
       "description": "Ambiente de SPA e relaxamento",
-      "imageUrl": "https://picsum.photos/seed/spa-luxury/800/1000",
-      "imageHint": "luxury interior"
+      "imageUrl": "https://picsum.photos/seed/lumina-clinic/800/1000",
+      "imageHint": "luxury clinic"
     }
   ]
 }
