@@ -3,9 +3,9 @@
   "placeholderImages": [
     {
       "id": "hero-spa",
-      "description": "Luxury spa interior with soft lighting",
-      "imageUrl": "https://picsum.photos/seed/lumina-hero/1920/1080",
-      "imageHint": "luxury spa interior"
+      "description": "High-end aesthetic model with clear skin touching her face",
+      "imageUrl": "https://picsum.photos/seed/lumina-model/1920/1080",
+      "imageHint": "aesthetic model"
     },
     {
       "id": "service-facial",
