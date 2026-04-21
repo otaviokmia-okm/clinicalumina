@@ -10,7 +10,7 @@
     {
       "id": "hero-main",
       "description": "Imagem cinematográfica do topo",
-      "imageUrl": "https://picsum.photos/seed/lumina-top-view/1920/1080",
+      "imageUrl": "/assets/images/hero-modelo",
       "imageHint": "luxury skin"
     },
     {
