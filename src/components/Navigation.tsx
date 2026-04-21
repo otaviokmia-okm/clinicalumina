@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sparkles, Menu, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,12 @@ import {
 } from '@/components/ui/sheet';
 
 export function Navigation() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border/40">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -35,26 +42,28 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="bg-background">
-              <div className="flex flex-col gap-8 mt-12">
-                <Link href="/" className="text-xl font-headline tracking-widest">Início</Link>
-                <Link href="#services" className="text-xl font-headline tracking-widest">Serviços</Link>
-                <Link href="#about" className="text-xl font-headline tracking-widest">Diferenciais</Link>
-                <Link href="#booking" className="text-xl font-headline tracking-widest">Agendar</Link>
-                <div className="mt-auto pt-8 border-t">
-                  <Link href="/admin/login" className="flex items-center gap-2 text-sm uppercase tracking-widest text-muted-foreground">
-                    <Lock className="h-4 w-4" /> Acesso Administrativo
-                  </Link>
+          {mounted && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-background">
+                <div className="flex flex-col gap-8 mt-12">
+                  <Link href="/" className="text-xl font-headline tracking-widest">Início</Link>
+                  <Link href="#services" className="text-xl font-headline tracking-widest">Serviços</Link>
+                  <Link href="#about" className="text-xl font-headline tracking-widest">Diferenciais</Link>
+                  <Link href="#booking" className="text-xl font-headline tracking-widest">Agendar</Link>
+                  <div className="mt-auto pt-8 border-t">
+                    <Link href="/admin/login" className="flex items-center gap-2 text-sm uppercase tracking-widest text-muted-foreground">
+                      <Lock className="h-4 w-4" /> Acesso Administrativo
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          )}
         </div>
       </div>
     </nav>
