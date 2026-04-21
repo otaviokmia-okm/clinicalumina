@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -34,7 +35,7 @@ export function BookingWidget() {
     }
 
     setLoading(true);
-    // Simulate API call
+    // Simulação de API
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     setLoading(false);
@@ -47,6 +48,7 @@ export function BookingWidget() {
 
   const isDateDisabled = (date: Date) => {
     const today = startOfDay(new Date());
+    // Desativa dias passados e domingos (0)
     return startOfDay(date) < today || date.getDay() === 0;
   };
 
@@ -78,10 +80,9 @@ export function BookingWidget() {
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border-none w-full max-w-[350px]"
+                className="rounded-md border-none w-full"
                 locale={ptBR}
                 disabled={isDateDisabled}
-                initialFocus
               />
             </div>
           </div>
