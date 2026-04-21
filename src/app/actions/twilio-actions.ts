@@ -15,17 +15,16 @@ export async function sendTwilioMessage(to: string, message: string, useWhatsApp
   const fromNumber = process.env.TWILIO_FROM_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
-    console.error('Twilio Error: Credentials not found in environment variables.');
     return { 
       success: false, 
-      error: 'Configurações do Twilio não encontradas. Verifique as variáveis de ambiente.' 
+      error: 'Configurações do Twilio não encontradas. Certifique-se de definir TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN e TWILIO_FROM_NUMBER no ambiente.' 
     };
   }
 
-  const client = twilio(accountSid, authToken);
-
   try {
-    // Formatação básica para E.164
+    const client = twilio(accountSid, authToken);
+
+    // Formatação básica para E.164 (remove espaços, parênteses e traços)
     let formattedTo = to.replace(/\D/g, '');
     if (!formattedTo.startsWith('+')) {
       formattedTo = '+' + formattedTo;
@@ -40,7 +39,6 @@ export async function sendTwilioMessage(to: string, message: string, useWhatsApp
       to: toAddress
     });
 
-    console.log(`Twilio Message Sent: ${result.sid}`);
     return { success: true, sid: result.sid };
   } catch (error: any) {
     console.error('Twilio SDK Error:', error);
