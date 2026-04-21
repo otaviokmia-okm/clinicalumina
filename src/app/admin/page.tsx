@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -74,7 +73,6 @@ export default function AdminDashboard() {
         toast({
           title: "Novo Agendamento!",
           description: "Uma nova solicitação acaba de chegar no sistema.",
-          action: <Badge className="bg-primary animate-pulse">NOVO</Badge>
         });
       }
       prevCount.current = appointments.length;
@@ -83,7 +81,10 @@ export default function AdminDashboard() {
 
   const updateStatus = (id: string, newStatus: AppointmentStatus) => {
     const docRef = doc(db, 'appointments', id);
-    updateDocumentNonBlocking(docRef, { status: newStatus });
+    updateDocumentNonBlocking(docRef, { 
+      status: newStatus,
+      updatedAt: new Date().toISOString()
+    });
     
     toast({
       title: 'Status Atualizado',
