@@ -1,8 +1,8 @@
 /**
  * LUMINA AESTHETICS - FIRESTORE SECURITY RULES (PROTOTYPE VERSION)
  *
- * Ajustado para permitir que o administrador acesse e gerencie agendamentos
- * mesmo com login anônimo/demonstração.
+ * Ajustado para permitir que visitantes vejam horários ocupados
+ * e administradores gerenciem a agenda.
  */
 
 rules_version = '2';
@@ -16,13 +16,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Para o protótipo, permitimos que qualquer usuário autenticado no painel admin
-      // possa gerenciar, ou mantemos a verificação de role se o documento existir.
-      return isSignedIn() && (
-        exists(/databases/$(database)/documents/admin_roles/$(request.auth.uid)) ||
-        // Fallback para permitir testes no protótipo sem configurar DBAC manualmente
-        true 
-      );
+      // Para o protótipo, permitimos acesso administrativo se estiver logado
+      // No futuro, verificaríamos o documento em admin_roles
+      return isSignedIn();
     }
 
     // --- Collection Rules ---
@@ -37,13 +33,13 @@ service cloud.firestore {
     }
 
     match /appointments/{appointmentId} {
-      // Permitir leitura se estiver logado
-      allow get, list: if isSignedIn();
+      // Permitir leitura pública para que o calendário mostre horários ocupados (busy slots)
+      allow get, list: if true;
       
-      // Criar: Clientes para si mesmos ou Admins
+      // Criar: Qualquer pessoa autenticada (anônima ou não)
       allow create: if isSignedIn();
 
-      // Atualizar/Deletar: Permitido para usuários autenticados (Gestão Admin)
+      // Atualizar/Deletar: Apenas Administradores (ou usuário logado para fins de protótipo)
       allow update, delete: if isSignedIn();
     }
 
