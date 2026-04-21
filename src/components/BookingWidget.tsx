@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,7 @@ const TIME_SLOTS = [
 ];
 
 export function BookingWidget() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [slot, setSlot] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -30,6 +30,10 @@ export function BookingWidget() {
   const { toast } = useToast();
   const db = useFirestore();
   const auth = useAuth();
+
+  useEffect(() => {
+    setDate(new Date());
+  }, []);
 
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !date) return null;

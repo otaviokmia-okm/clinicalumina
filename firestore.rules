@@ -1,3 +1,4 @@
+
 /**
  * LUMINA AESTHETICS - FIRESTORE SECURITY RULES (PROTOTYPE VERSION)
  *
@@ -34,6 +35,7 @@ service cloud.firestore {
 
     match /appointments/{appointmentId} {
       // Permitir leitura pública para que o calendário mostre horários ocupados (busy slots)
+      // Nota: Adicionado comentário para forçar redeploy das regras.
       allow get, list: if true;
       
       // Criar: Qualquer pessoa autenticada (anônima ou não)

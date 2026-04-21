@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -58,8 +59,12 @@ export default function AdminDashboard() {
   const [aiResult, setAiResult] = useState<{ message: string; guidance: string } | null>(null);
   const [generatingAi, setGeneratingAi] = useState(false);
   
-  const [newDate, setNewDate] = useState<Date | undefined>(new Date());
+  const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
+
+  useEffect(() => {
+    setNewDate(new Date());
+  }, []);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -202,7 +207,7 @@ export default function AdminDashboard() {
                       <Badge variant="outline" className="border-primary/20 text-primary font-light text-[10px]">{appt.serviceName}</Badge>
                     </TableCell>
                     <TableCell>
-                      <p className="text-xs">{format(new Date(appt.date + 'T12:00:00'), "dd/MM/yyyy")}</p>
+                      <p className="text-xs">{appt.date ? format(new Date(appt.date + 'T12:00:00'), "dd/MM/yyyy") : '-'}</p>
                       <p className="text-[10px] text-muted-foreground">{appt.timeSlot}</p>
                     </TableCell>
                     <TableCell>

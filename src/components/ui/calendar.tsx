@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -33,10 +34,10 @@ function Calendar({
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1 z-10"
         ),
-        month_grid: "w-full border-collapse space-y-1",
-        weekdays: "flex w-full",
+        month_grid: "w-full border-collapse",
+        weekdays: "flex w-full justify-between",
         weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 text-center",
-        week: "flex w-full mt-2",
+        week: "flex w-full mt-2 justify-between",
         day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex-1 flex justify-center items-center",
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
