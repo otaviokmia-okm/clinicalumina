@@ -2,34 +2,40 @@
 {
   "placeholderImages": [
     {
-      "id": "hero-spa",
-      "description": "High-end aesthetic model with clear skin touching her face",
-      "imageUrl": "https://picsum.photos/seed/lumina-model/1920/1080",
-      "imageHint": "aesthetic model"
+      "id": "main-logo",
+      "description": "Logotipo oficial da Lumina Aesthetics",
+      "imageUrl": "https://picsum.photos/seed/lumina-brand-logo/400/200",
+      "imageHint": "minimalist logo"
+    },
+    {
+      "id": "hero-main",
+      "description": "Imagem cinematográfica do topo",
+      "imageUrl": "https://picsum.photos/seed/lumina-top-view/1920/1080",
+      "imageHint": "luxury skin"
     },
     {
       "id": "service-facial",
-      "description": "Facial treatment close-up",
-      "imageUrl": "https://picsum.photos/seed/facial/800/600",
-      "imageHint": "facial treatment"
-    },
-    {
-      "id": "service-laser",
-      "description": "Advanced laser technology equipment",
-      "imageUrl": "https://picsum.photos/seed/laser/800/600",
-      "imageHint": "aesthetic laser technology"
+      "description": "Procedimento de Harmonização Facial",
+      "imageUrl": "https://picsum.photos/seed/facial-luxury/800/1000",
+      "imageHint": "facial aesthetics"
     },
     {
       "id": "service-bio",
-      "description": "Premium aesthetic product application",
-      "imageUrl": "https://picsum.photos/seed/bio/800/600",
-      "imageHint": "skincare treatment"
+      "description": "Aplicação de Bioestimuladores",
+      "imageUrl": "https://picsum.photos/seed/bio-luxury/800/1000",
+      "imageHint": "skincare medical"
+    },
+    {
+      "id": "service-laser",
+      "description": "Tecnologia Laser de última geração",
+      "imageUrl": "https://picsum.photos/seed/laser-luxury/800/1000",
+      "imageHint": "laser technology"
     },
     {
       "id": "service-spa",
-      "description": "Relaxing spa massage environment",
-      "imageUrl": "https://picsum.photos/seed/spa-protocol/800/600",
-      "imageHint": "spa massage"
+      "description": "Ambiente de SPA e relaxamento",
+      "imageUrl": "https://picsum.photos/seed/spa-luxury/800/1000",
+      "imageHint": "luxury interior"
     }
   ]
 }

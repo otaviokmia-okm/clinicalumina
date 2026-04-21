@@ -1,14 +1,17 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, Menu, Lock } from 'lucide-react';
+import Image from 'next/image';
+import { Menu, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function Navigation() {
   const [mounted, setMounted] = useState(false);
@@ -21,15 +24,26 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const logoImage = PlaceHolderImages.find(img => img.id === 'main-logo')?.imageUrl;
+
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-background/95 backdrop-blur-md py-4 border-b' : 'bg-transparent py-8'}`}>
       <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
-        <Link href="/" className="flex flex-col items-center group">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary transition-transform group-hover:scale-110" />
-            <span className="font-headline text-3xl tracking-[0.2em] uppercase">Lumina</span>
-          </div>
-          <span className="text-[8px] uppercase tracking-[0.5em] text-muted-foreground mt-1 font-bold">Aesthetics</span>
+        <Link href="/" className="relative h-12 w-48 transition-transform hover:scale-105">
+          {logoImage ? (
+            <Image 
+              src={logoImage} 
+              alt="Lumina Aesthetics Logo" 
+              fill 
+              className="object-contain"
+              priority
+            />
+          ) : (
+            <div className="flex flex-col items-center">
+              <span className="font-headline text-3xl tracking-[0.2em] uppercase">Lumina</span>
+              <span className="text-[8px] uppercase tracking-[0.5em] text-muted-foreground font-bold">Aesthetics</span>
+            </div>
+          )}
         </Link>
 
         {/* Desktop Links */}
