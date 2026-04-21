@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowLeft, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLoginPage() {
@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate auth
+    // Simulação de autenticação - qualquer credencial funciona no protótipo
     setTimeout(() => {
       router.push('/admin');
     }, 1500);
@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
         <div className="h-2 bg-primary w-full" />
         <CardHeader className="text-center py-10">
           <div className="mx-auto w-12 h-12 bg-primary flex items-center justify-center rounded-sm mb-4">
-            <Sparkles className="h-6 w-6 text-primary-foreground" />
+            <Lock className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-3xl font-headline tracking-widest uppercase">Lumina Admin</CardTitle>
           <CardDescription className="uppercase text-[10px] tracking-[0.2em] font-bold text-muted-foreground mt-2">Acesso Restrito Concierge</CardDescription>
@@ -46,7 +46,12 @@ export default function AdminLoginPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="pass" className="text-[10px] uppercase tracking-widest">Senha de Acesso</Label>
-              <Input id="pass" required type="password" className="rounded-none bg-secondary/10" />
+              <Input id="pass" required type="password" placeholder="••••••••" className="rounded-none bg-secondary/10" />
+            </div>
+            <div className="p-4 bg-primary/5 border border-primary/10 mb-2">
+              <p className="text-[10px] text-center text-primary uppercase tracking-widest leading-relaxed">
+                Ambiente de Demonstração:<br />Use qualquer e-mail e senha para entrar.
+              </p>
             </div>
             <Button type="submit" disabled={loading} className="w-full h-12 bg-primary hover:bg-primary/90 rounded-none uppercase tracking-widest text-sm">
               {loading ? "Verificando..." : "Entrar no Painel"}

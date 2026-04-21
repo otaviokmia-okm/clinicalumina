@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Sparkles, Menu } from 'lucide-react';
+import { Sparkles, Menu, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -28,7 +28,9 @@ export function Navigation() {
           <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
             <Link href="#booking">Agendar Experiência</Link>
           </Button>
-          <Link href="/admin/login" className="text-xs text-muted-foreground hover:text-primary underline-offset-4 hover:underline">Acesso Restrito</Link>
+          <Link href="/admin/login" className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors border-l pl-6 border-border">
+            <Lock className="h-3 w-3" /> Acesso Restrito
+          </Link>
         </div>
 
         {/* Mobile Menu */}
@@ -41,10 +43,15 @@ export function Navigation() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-background">
               <div className="flex flex-col gap-8 mt-12">
+                <Link href="/" className="text-xl font-headline tracking-widest">Início</Link>
                 <Link href="#services" className="text-xl font-headline tracking-widest">Serviços</Link>
                 <Link href="#about" className="text-xl font-headline tracking-widest">Diferenciais</Link>
                 <Link href="#booking" className="text-xl font-headline tracking-widest">Agendar</Link>
-                <Link href="/admin/login" className="text-sm text-muted-foreground mt-auto">Acesso Administrativo</Link>
+                <div className="mt-auto pt-8 border-t">
+                  <Link href="/admin/login" className="flex items-center gap-2 text-sm uppercase tracking-widest text-muted-foreground">
+                    <Lock className="h-4 w-4" /> Acesso Administrativo
+                  </Link>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
