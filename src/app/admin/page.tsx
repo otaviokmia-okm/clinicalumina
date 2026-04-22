@@ -24,12 +24,12 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send, History, Filter, CheckCircle2 } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Wand2, Loader2, Bell, Mail, Send, Filter, CheckCircle2 } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
-import { collection, doc, orderBy, query } from 'firebase/firestore';
+import { collection, doc, query } from 'firebase/firestore';
 import { format, isBefore, startOfDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -53,12 +53,13 @@ export default function AdminDashboard() {
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("active");
 
+  // Removido o orderBy do Firestore para evitar erros de índice no protótipo
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return query(collection(db, 'appointments'), orderBy('date', 'asc'), orderBy('timeSlot', 'asc'));
+    return query(collection(db, 'appointments'));
   }, [db, user]);
   
-  const { data: appointments, isLoading: isCollectionLoading } = useCollection<Appointment>(appointmentsQuery);
+  const { data: rawAppointments, isLoading: isCollectionLoading } = useCollection<Appointment>(appointmentsQuery);
 
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
@@ -68,21 +69,35 @@ export default function AdminDashboard() {
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
 
-  // Auto-Mark as Attended for past dates (Optimized to run once per item)
+  // Ordenação e Filtragem Cliente-Side para maior robustez
+  const appointments = useMemo(() => {
+    if (!rawAppointments) return [];
+    return [...rawAppointments].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.timeSlot.localeCompare(b.timeSlot);
+    });
+  }, [rawAppointments]);
+
+  // Auto-Mark as Attended para datas passadas
   useEffect(() => {
     if (appointments && appointments.length > 0) {
       const today = startOfDay(new Date());
       appointments.forEach(appt => {
         if (updatedRefs.current.has(appt.id)) return;
 
-        const apptDate = startOfDay(parseISO(appt.date));
-        if (isBefore(apptDate, today) && (appt.status === 'Confirmado' || appt.status === 'Remarcado')) {
-          const docRef = doc(db, 'appointments', appt.id);
-          updatedRefs.current.add(appt.id);
-          updateDocumentNonBlocking(docRef, { 
-            status: 'Atendido',
-            updatedAt: new Date().toISOString()
-          });
+        try {
+          const apptDate = startOfDay(parseISO(appt.date));
+          if (isBefore(apptDate, today) && (appt.status === 'Confirmado' || appt.status === 'Remarcado' || appt.status === 'Pendente')) {
+            const docRef = doc(db, 'appointments', appt.id);
+            updatedRefs.current.add(appt.id);
+            updateDocumentNonBlocking(docRef, { 
+              status: 'Atendido',
+              updatedAt: new Date().toISOString()
+            });
+          }
+        } catch (e) {
+          console.error("Erro ao processar data do agendamento", appt.id, e);
         }
       });
     }
@@ -111,13 +126,11 @@ export default function AdminDashboard() {
     
     let filtered = appointments;
 
-    // Filter by Date if selected
     if (filterDate) {
       const dateStr = format(filterDate, 'yyyy-MM-dd');
       filtered = filtered.filter(a => a.date === dateStr);
     }
 
-    // Filter by Tab
     if (activeTab === "active") {
       filtered = filtered.filter(a => a.status === 'Pendente' || a.status === 'Confirmado' || a.status === 'Remarcado');
     } else if (activeTab === "history") {
@@ -154,6 +167,7 @@ export default function AdminDashboard() {
   };
 
   const updateStatus = async (id: string, newStatus: AppointmentStatus) => {
+    if (!db) return;
     const docRef = doc(db, 'appointments', id);
     updateDocumentNonBlocking(docRef, { 
       status: newStatus,
@@ -174,7 +188,7 @@ export default function AdminDashboard() {
   };
 
   const handleReschedule = () => {
-    if (!reschedulingAppt || !newDate || !newSlot) return;
+    if (!reschedulingAppt || !newDate || !newSlot || !db) return;
 
     const docRef = doc(db, 'appointments', reschedulingAppt.id);
     updateDocumentNonBlocking(docRef, { 
@@ -274,7 +288,7 @@ export default function AdminDashboard() {
                 <div className="mx-auto w-12 h-12 bg-secondary/20 rounded-full flex items-center justify-center">
                   <CalendarIcon className="h-6 w-6 text-muted-foreground/40" />
                 </div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nenhum agendamento encontrado para este filtro.</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nenhum agendamento encontrado.</p>
               </div>
             ) : (
               <Table>
@@ -496,4 +510,3 @@ export default function AdminDashboard() {
     </main>
   );
 }
-
