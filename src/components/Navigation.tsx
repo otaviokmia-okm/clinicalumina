@@ -80,7 +80,7 @@ export function Navigation() {
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="hover:bg-transparent">
-                <Menu className="h-7 w-7 text-white" />
+                <Menu className={`h-7 w-7 ${scrolled ? 'text-black' : 'text-white'}`} />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-background border-l-border/30 w-full sm:max-w-md">
