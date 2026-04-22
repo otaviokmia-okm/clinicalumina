@@ -10,6 +10,9 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -37,7 +40,6 @@ export function Navigation() {
     }`}>
       <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
         <Link href="/" className="relative flex items-center group">
-          {/* Logo Circular Frame */}
           <div className="relative h-16 w-16 md:h-20 md:w-20 rounded-full border border-primary/30 p-1 bg-white/10 backdrop-blur-sm overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
             {logoData && !logoError ? (
               <div className="relative h-full w-full rounded-full overflow-hidden">
@@ -57,14 +59,12 @@ export function Navigation() {
               </div>
             )}
           </div>
-          {/* Text Logo for branding next to frame */}
           <div className="ml-4 hidden sm:flex flex-col">
             <span className="font-headline text-2xl tracking-[0.2em] uppercase text-white drop-shadow-md">Lumina</span>
             <span className="text-[7px] uppercase tracking-[0.5em] text-primary font-black">Aesthetics</span>
           </div>
         </Link>
 
-        {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-10">
           <Link href="#services" className="text-[11px] uppercase tracking-[0.3em] font-black text-white hover:text-primary transition-colors drop-shadow-sm">Serviços</Link>
           <Link href="#about" className="text-[11px] uppercase tracking-[0.3em] font-black text-white hover:text-primary transition-colors drop-shadow-sm">O Conceito</Link>
@@ -76,7 +76,6 @@ export function Navigation() {
           </Link>
         </div>
 
-        {/* Mobile Menu */}
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -85,6 +84,10 @@ export function Navigation() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-background border-l-border/30 w-full sm:max-w-md">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Menu de Navegação</SheetTitle>
+                <SheetDescription>Acesse as seções principais do site da Lumina Aesthetics</SheetDescription>
+              </SheetHeader>
               <div className="flex flex-col h-full py-20 px-8 text-center space-y-12">
                 <Link href="/" className="group flex flex-col items-center">
                    <div className="h-24 w-24 rounded-full border border-primary/20 p-1 mb-6">

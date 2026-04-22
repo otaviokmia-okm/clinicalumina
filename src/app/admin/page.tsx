@@ -351,6 +351,7 @@ export default function AdminDashboard() {
         <DialogContent className="max-w-3xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
             <DialogTitle className="text-3xl font-headline">Reagendar Atendimento</DialogTitle>
+            <DialogDescription className="sr-only">Selecione uma nova data e horário para o atendimento de {reschedulingAppt?.clientName}.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
             <div className="bg-secondary/10 p-4 border border-border">
