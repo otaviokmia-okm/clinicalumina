@@ -1,9 +1,7 @@
 
 /**
- * LUMINA AESTHETICS - FIRESTORE SECURITY RULES (PROTOTYPE VERSION)
- *
- * Ajustado para permitir que visitantes vejam horários ocupados
- * e administradores gerenciem a agenda.
+ * LUMINA AESTHETICS - FIRESTORE SECURITY RULES
+ * Versão otimizada para o protótipo.
  */
 
 rules_version = '2';
@@ -16,33 +14,24 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      // Para o protótipo, permitimos acesso administrativo se estiver logado
-      // No futuro, verificaríamos o documento em admin_roles
-      return isSignedIn();
-    }
-
     // --- Collection Rules ---
 
     match /services/{serviceId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     match /clients/{clientId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /appointments/{appointmentId} {
-      // Permitir leitura pública para que o calendário mostre horários ocupados (busy slots)
-      // Nota: Adicionado comentário para forçar redeploy das regras.
-      allow get, list: if true;
+      // Aberto para leitura para permitir que visitantes vejam horários ocupados
+      // e o administrador veja a agenda completa.
+      allow read: if true;
       
-      // Criar: Qualquer pessoa autenticada (anônima ou não)
-      allow create: if isSignedIn();
-
-      // Atualizar/Deletar: Apenas Administradores (ou usuário logado para fins de protótipo)
-      allow update, delete: if isSignedIn();
+      // Permitir criação e atualização para usuários autenticados (incluindo anônimos)
+      allow create, update, delete: if isSignedIn();
     }
 
     match /admin_roles/{adminId} {

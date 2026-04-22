@@ -48,6 +48,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
   const prevCount = useRef<number>(0);
+  const updatedRefs = useRef<Set<string>>(new Set());
   
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("active");
@@ -67,14 +68,17 @@ export default function AdminDashboard() {
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
 
-  // Auto-Mark as Attended for past dates
+  // Auto-Mark as Attended for past dates (Optimized to run once per item)
   useEffect(() => {
     if (appointments && appointments.length > 0) {
       const today = startOfDay(new Date());
       appointments.forEach(appt => {
+        if (updatedRefs.current.has(appt.id)) return;
+
         const apptDate = startOfDay(parseISO(appt.date));
         if (isBefore(apptDate, today) && (appt.status === 'Confirmado' || appt.status === 'Remarcado')) {
           const docRef = doc(db, 'appointments', appt.id);
+          updatedRefs.current.add(appt.id);
           updateDocumentNonBlocking(docRef, { 
             status: 'Atendido',
             updatedAt: new Date().toISOString()
@@ -193,7 +197,7 @@ export default function AdminDashboard() {
       case 'Confirmado': return 'default';
       case 'Cancelado': return 'destructive';
       case 'Remarcado': return 'outline';
-      case 'Atendido': return 'outline'; // Estilo específico de sucesso silencioso
+      case 'Atendido': return 'outline';
       default: return 'secondary';
     }
   };
@@ -217,7 +221,6 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold">Painel Administrativo Lumina Concierge</p>
           </div>
           <div className="flex flex-wrap gap-4 items-center">
-            {/* Date Filter */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className={cn("rounded-none border-border bg-background uppercase text-[10px] tracking-widest h-11 px-6", filterDate && "border-primary text-primary")}>
@@ -360,21 +363,6 @@ export default function AdminDashboard() {
                               </Button>
                             </>
                           )}
-                          {(appt.status === 'Atendido' || appt.status === 'Cancelado') && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={() => {
-                                setSelectedAppt(appt);
-                                setGeneratingAi(false);
-                                setAiResult(null); // Visualização simples no histórico
-                              }}
-                              className="text-muted-foreground h-8 w-8 p-0"
-                              title="Ver Detalhes"
-                            >
-                              <Filter className="h-3.5 w-3.5 rotate-90" />
-                            </Button>
-                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -386,7 +374,6 @@ export default function AdminDashboard() {
         </Tabs>
       </div>
 
-      {/* Dialogs remain similar but with updated text */}
       <Dialog open={!!selectedAppt} onOpenChange={(open) => !open && setSelectedAppt(null)}>
         <DialogContent className="max-w-2xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
@@ -437,10 +424,6 @@ export default function AdminDashboard() {
                     <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Status Final</p>
                     <p className="text-sm font-bold uppercase tracking-widest text-primary">{selectedAppt?.status}</p>
                   </div>
-                </div>
-                <div className="p-4 border border-border">
-                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-2">Registro do Sistema</p>
-                  <p className="text-xs leading-relaxed italic">Atendimento arquivado no histórico de {selectedAppt?.clientName} para consultas futuras.</p>
                 </div>
               </div>
             )}
@@ -513,3 +496,4 @@ export default function AdminDashboard() {
     </main>
   );
 }
+
