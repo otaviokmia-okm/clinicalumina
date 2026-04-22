@@ -31,7 +31,6 @@ export function BookingWidget() {
   const auth = useAuth();
 
   useEffect(() => {
-    // Avoid hydration errors by setting the initial date on the client
     setDate(new Date());
   }, []);
 
@@ -143,20 +142,27 @@ export function BookingWidget() {
   }
 
   return (
-    <section id="booking" className="py-32 bg-background border-t border-border">
+    <section id="booking" className="py-24 bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 items-start">
-          <div className="lg:col-span-5 space-y-12">
-            <div className="space-y-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Reservas</span>
-              <h2 className="text-5xl md:text-6xl font-headline leading-tight">Agende sua <br /><span className="text-primary italic">Experiência Lumina</span></h2>
+        {/* Intro Text - Now on top */}
+        <div className="mb-20 text-center max-w-3xl mx-auto space-y-6">
+          <div className="space-y-4">
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Reservas</span>
+            <h2 className="text-5xl md:text-6xl font-headline leading-tight">Agende sua <br /><span className="text-primary italic">Experiência Lumina</span></h2>
+          </div>
+          <p className="text-xl text-muted-foreground font-light leading-relaxed">
+            Escolha o momento ideal para sua transformação. Cada visita é planejada com exclusividade para atender seus desejos.
+          </p>
+        </div>
+
+        <form onSubmit={handleBooking} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start bg-white p-8 md:p-16 shadow-2xl border border-border/40">
+          {/* Column 1: Calendar */}
+          <div className="space-y-8">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">1</span>
+              <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Escolha uma Data</Label>
             </div>
-            
-            <p className="text-xl text-muted-foreground font-light leading-relaxed">
-              Escolha o momento ideal para sua transformação. Cada visita é planejada com exclusividade para atender seus desejos.
-            </p>
-            
-            <div className="p-8 bg-secondary/20 border border-primary/5 shadow-inner">
+            <div className="p-4 bg-secondary/10 border border-primary/5 shadow-inner">
               <Calendar
                 mode="single"
                 selected={date}
@@ -171,10 +177,14 @@ export function BookingWidget() {
             </div>
           </div>
 
-          <form onSubmit={handleBooking} className="lg:col-span-7 bg-white p-12 md:p-16 shadow-2xl space-y-12 border border-border/40">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b pb-4">
-                <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Horários Disponíveis</Label>
+          {/* Column 2: Slots & Form */}
+          <div className="space-y-12">
+            <div className="space-y-8">
+              <div className="flex items-center justify-between border-b border-border/40 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">2</span>
+                  <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Horários do Dia</Label>
+                </div>
                 {isLoadingAppts && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
               </div>
               
@@ -207,50 +217,48 @@ export function BookingWidget() {
               </RadioGroup>
             </div>
 
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Label htmlFor="name" className="text-[10px] uppercase tracking-[0.2em] font-bold">Identificação</Label>
+            <div className="space-y-8 pt-8 border-t border-border/40">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">3</span>
+                <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Suas Informações</Label>
+              </div>
+
+              <div className="space-y-6">
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
                   <Input name="name" id="name" required placeholder="NOME COMPLETO" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <Label htmlFor="phone" className="text-[10px] uppercase tracking-[0.2em] font-bold">Contato</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
                     <Input name="phone" id="phone" required type="tel" placeholder="(00) 00000-0000" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
                   </div>
-                </div>
-                <div className="space-y-4">
-                  <Label htmlFor="email" className="text-[10px] uppercase tracking-[0.2em] font-bold">E-mail</Label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-                    <Input name="email" id="email" required type="email" placeholder="EMAIL PROFISSIONAL" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
+                    <Input name="email" id="email" required type="email" placeholder="EMAIL" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
                   </div>
                 </div>
               </div>
-            </div>
 
-            <Button 
-              type="submit" 
-              disabled={loading || !date || !slot || busySlots.includes(slot)} 
-              className="w-full h-16 text-[11px] uppercase tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-xl"
-            >
-              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Solicitar Reserva"}
-            </Button>
-            
-            <div className="flex items-center justify-center gap-3 opacity-50">
-               <Sparkles className="h-3 w-3 text-primary" />
-               <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.3em]">
-                 Sua privacidade é nosso compromisso de luxo.
-               </p>
-               <Sparkles className="h-3 w-3 text-primary" />
+              <Button 
+                type="submit" 
+                disabled={loading || !date || !slot || busySlots.includes(slot)} 
+                className="w-full h-16 text-[11px] uppercase tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-xl"
+              >
+                {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Confirmar Solicitação"}
+              </Button>
+              
+              <div className="flex items-center justify-center gap-3 opacity-50">
+                 <Sparkles className="h-3 w-3 text-primary" />
+                 <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.3em]">
+                   Atendimento exclusivo mediante agendamento.
+                 </p>
+                 <Sparkles className="h-3 w-3 text-primary" />
+              </div>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </section>
   );
