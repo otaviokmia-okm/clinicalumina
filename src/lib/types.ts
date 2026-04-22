@@ -8,7 +8,7 @@ export type Service = {
   imageUrl: string;
 };
 
-export type AppointmentStatus = 'Pendente' | 'Confirmado' | 'Remarcado' | 'Cancelado';
+export type AppointmentStatus = 'Pendente' | 'Confirmado' | 'Remarcado' | 'Cancelado' | 'Atendido';
 
 export type Appointment = {
   id: string;
@@ -21,4 +21,5 @@ export type Appointment = {
   timeSlot: string;
   status: AppointmentStatus;
   createdAt: string;
+  updatedAt?: string;
 };

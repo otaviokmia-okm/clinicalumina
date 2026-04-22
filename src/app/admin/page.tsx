@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navigation } from '@/components/Navigation';
 import { 
@@ -22,18 +22,20 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Sparkles, Wand2, Loader2, Bell, Mail, Send, History, Filter, CheckCircle2 } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, doc, orderBy, query } from 'firebase/firestore';
-import { format } from 'date-fns';
+import { format, isBefore, startOfDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 const TIME_SLOTS = [
@@ -47,9 +49,12 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const prevCount = useRef<number>(0);
   
+  const [filterDate, setFilterDate] = useState<Date | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState("active");
+
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return query(collection(db, 'appointments'), orderBy('createdAt', 'desc'));
+    return query(collection(db, 'appointments'), orderBy('date', 'asc'), orderBy('timeSlot', 'asc'));
   }, [db, user]);
   
   const { data: appointments, isLoading: isCollectionLoading } = useCollection<Appointment>(appointmentsQuery);
@@ -62,9 +67,22 @@ export default function AdminDashboard() {
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
 
+  // Auto-Mark as Attended for past dates
   useEffect(() => {
-    setNewDate(new Date());
-  }, []);
+    if (appointments && appointments.length > 0) {
+      const today = startOfDay(new Date());
+      appointments.forEach(appt => {
+        const apptDate = startOfDay(parseISO(appt.date));
+        if (isBefore(apptDate, today) && (appt.status === 'Confirmado' || appt.status === 'Remarcado')) {
+          const docRef = doc(db, 'appointments', appt.id);
+          updateDocumentNonBlocking(docRef, { 
+            status: 'Atendido',
+            updatedAt: new Date().toISOString()
+          });
+        }
+      });
+    }
+  }, [appointments, db]);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -84,6 +102,27 @@ export default function AdminDashboard() {
     }
   }, [appointments, toast]);
 
+  const filteredAppointments = useMemo(() => {
+    if (!appointments) return [];
+    
+    let filtered = appointments;
+
+    // Filter by Date if selected
+    if (filterDate) {
+      const dateStr = format(filterDate, 'yyyy-MM-dd');
+      filtered = filtered.filter(a => a.date === dateStr);
+    }
+
+    // Filter by Tab
+    if (activeTab === "active") {
+      filtered = filtered.filter(a => a.status === 'Pendente' || a.status === 'Confirmado' || a.status === 'Remarcado');
+    } else if (activeTab === "history") {
+      filtered = filtered.filter(a => a.status === 'Atendido' || a.status === 'Cancelado');
+    }
+
+    return filtered;
+  }, [appointments, filterDate, activeTab]);
+
   const generateAIContent = async (appt: Appointment) => {
     setGeneratingAi(true);
     setSelectedAppt(appt);
@@ -99,10 +138,6 @@ export default function AdminDashboard() {
         emailSubject: result.emailSubject,
         emailBody: result.emailBody
       });
-      
-      console.log(`%c[EMAIL SIMULATION] Sending to: ${appt.clientEmail}`, "color: #d4af37; font-weight: bold;");
-      console.log(`Subject: ${result.emailSubject}`);
-      
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -158,6 +193,7 @@ export default function AdminDashboard() {
       case 'Confirmado': return 'default';
       case 'Cancelado': return 'destructive';
       case 'Remarcado': return 'outline';
+      case 'Atendido': return 'outline'; // Estilo específico de sucesso silencioso
       default: return 'secondary';
     }
   };
@@ -180,114 +216,186 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-headline">Gestão de Agenda</h1>
             <p className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold">Painel Administrativo Lumina Concierge</p>
           </div>
-          <div className="flex gap-4">
-            <div className="px-4 py-2 bg-background border border-border shadow-sm flex items-center gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* Date Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("rounded-none border-border bg-background uppercase text-[10px] tracking-widest h-11 px-6", filterDate && "border-primary text-primary")}>
+                  <Filter className="mr-2 h-3.5 w-3.5" />
+                  {filterDate ? format(filterDate, "dd 'de' MMM", { locale: ptBR }) : "Filtrar por Data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-none" align="end">
+                <CalendarComponent
+                  mode="single"
+                  selected={filterDate}
+                  onSelect={setFilterDate}
+                  initialFocus
+                />
+                {filterDate && (
+                  <div className="p-3 border-t border-border flex justify-center">
+                    <Button variant="ghost" size="sm" onClick={() => setFilterDate(undefined)} className="text-[10px] uppercase tracking-widest">Limpar Filtro</Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+
+            <div className="px-4 py-2 bg-background border border-border shadow-sm flex items-center gap-4 h-11">
               <div className="text-right">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Novas Solicitações</p>
-                <p className="font-headline text-xl text-primary">{appointments?.filter(a => a.status === 'Pendente').length || 0}</p>
+                <p className="font-headline text-lg text-primary">{appointments?.filter(a => a.status === 'Pendente').length || 0}</p>
               </div>
-              <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <Bell className={cn("h-5 w-5 text-primary", appointments?.some(a => a.status === 'Pendente') && "animate-bounce")} />
+              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <Bell className={cn("h-4 w-4 text-primary", appointments?.some(a => a.status === 'Pendente') && "animate-bounce")} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-background shadow-xl border border-border/40 overflow-hidden rounded-none">
-          {isCollectionLoading ? (
-            <div className="py-20 flex flex-col items-center gap-4">
-              <Loader2 className="h-8 w-8 text-primary animate-spin" />
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Acessando registros...</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader className="bg-secondary/20">
-                <TableRow>
-                  <TableHead className="uppercase text-[10px] tracking-widest font-bold">Cliente</TableHead>
-                  <TableHead className="uppercase text-[10px] tracking-widest font-bold">Serviço</TableHead>
-                  <TableHead className="uppercase text-[10px] tracking-widest font-bold">Data/Hora</TableHead>
-                  <TableHead className="uppercase text-[10px] tracking-widest font-bold">Status</TableHead>
-                  <TableHead className="uppercase text-[10px] tracking-widest font-bold text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {appointments?.map((appt) => (
-                  <TableRow key={appt.id} className="hover:bg-secondary/5 transition-colors group">
-                    <TableCell className="py-6">
-                      <p className="font-semibold text-sm">{appt.clientName}</p>
-                      <p className="text-[10px] text-muted-foreground font-light">{appt.clientPhone}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="border-primary/20 text-primary font-light text-[10px]">{appt.serviceName}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-xs">{appt.date ? format(new Date(appt.date + 'T12:00:00'), "dd/MM/yyyy") : '-'}</p>
-                      <p className="text-[10px] text-muted-foreground">{appt.timeSlot}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getBadgeColor(appt.status)} className="text-[9px] uppercase tracking-widest px-2 py-0">
-                        {appt.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1">
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => generateAIContent(appt)}
-                          className="text-primary hover:bg-primary/10 h-8 w-8 p-0"
-                          title="Gerar Confirmação IA"
-                        >
-                          <Wand2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          onClick={() => updateStatus(appt.id, 'Confirmado')}
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8 p-0"
-                          title="Confirmar"
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => {
-                            setReschedulingAppt(appt);
-                            setNewSlot(appt.timeSlot);
-                            setNewDate(new Date(appt.date + 'T12:00:00'));
-                          }}
-                          className="h-8 w-8 p-0 rounded-none border-border"
-                          title="Remarcar"
-                        >
-                          <CalendarIcon className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => updateStatus(appt.id, 'Cancelado')}
-                          className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
-                          title="Cancelar"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+        <Tabs defaultValue="active" className="w-full" onValueChange={setActiveTab}>
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className="bg-background border border-border rounded-none h-12 p-1">
+              <TabsTrigger value="active" className="rounded-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground uppercase text-[10px] tracking-widest px-6 h-full">Agenda Ativa</TabsTrigger>
+              <TabsTrigger value="history" className="rounded-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground uppercase text-[10px] tracking-widest px-6 h-full">Histórico</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="bg-background shadow-xl border border-border/40 overflow-hidden rounded-none">
+            {isCollectionLoading ? (
+              <div className="py-20 flex flex-col items-center gap-4">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Acessando registros...</p>
+              </div>
+            ) : filteredAppointments.length === 0 ? (
+              <div className="py-24 text-center space-y-4">
+                <div className="mx-auto w-12 h-12 bg-secondary/20 rounded-full flex items-center justify-center">
+                  <CalendarIcon className="h-6 w-6 text-muted-foreground/40" />
+                </div>
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nenhum agendamento encontrado para este filtro.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader className="bg-secondary/20">
+                  <TableRow>
+                    <TableHead className="uppercase text-[10px] tracking-widest font-bold">Cliente</TableHead>
+                    <TableHead className="uppercase text-[10px] tracking-widest font-bold">Serviço</TableHead>
+                    <TableHead className="uppercase text-[10px] tracking-widest font-bold">Data/Hora</TableHead>
+                    <TableHead className="uppercase text-[10px] tracking-widest font-bold">Status</TableHead>
+                    <TableHead className="uppercase text-[10px] tracking-widest font-bold text-right">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredAppointments.map((appt) => (
+                    <TableRow key={appt.id} className="hover:bg-secondary/5 transition-colors group">
+                      <TableCell className="py-6">
+                        <p className="font-semibold text-sm">{appt.clientName}</p>
+                        <p className="text-[10px] text-muted-foreground font-light">{appt.clientPhone}</p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="border-primary/20 text-primary font-light text-[10px]">{appt.serviceName}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-xs">{appt.date ? format(new Date(appt.date + 'T12:00:00'), "dd/MM/yyyy") : '-'}</p>
+                        <p className="text-[10px] text-muted-foreground">{appt.timeSlot}</p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getBadgeColor(appt.status)} className={cn("text-[9px] uppercase tracking-widest px-2 py-0", appt.status === 'Atendido' && "bg-green-50 text-green-700 border-green-200")}>
+                          {appt.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-1">
+                          {appt.status !== 'Atendido' && appt.status !== 'Cancelado' && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => generateAIContent(appt)}
+                                className="text-primary hover:bg-primary/10 h-8 w-8 p-0"
+                                title="Gerar Confirmação IA"
+                              >
+                                <Wand2 className="h-3.5 w-3.5" />
+                              </Button>
+                              {appt.status !== 'Confirmado' && (
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => updateStatus(appt.id, 'Confirmado')}
+                                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8 p-0"
+                                  title="Confirmar"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {appt.status === 'Confirmado' && (
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => updateStatus(appt.id, 'Atendido')}
+                                  className="bg-green-600 hover:bg-green-700 text-white h-8 w-8 p-0"
+                                  title="Marcar como Atendido"
+                                >
+                                  <CheckCircle2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => {
+                                  setReschedulingAppt(appt);
+                                  setNewSlot(appt.timeSlot);
+                                  setNewDate(new Date(appt.date + 'T12:00:00'));
+                                }}
+                                className="h-8 w-8 p-0 rounded-none border-border"
+                                title="Remarcar"
+                              >
+                                <CalendarIcon className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => updateStatus(appt.id, 'Cancelado')}
+                                className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
+                                title="Cancelar"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          {(appt.status === 'Atendido' || appt.status === 'Cancelado') && (
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => {
+                                setSelectedAppt(appt);
+                                setGeneratingAi(false);
+                                setAiResult(null); // Visualização simples no histórico
+                              }}
+                              className="text-muted-foreground h-8 w-8 p-0"
+                              title="Ver Detalhes"
+                            >
+                              <Filter className="h-3.5 w-3.5 rotate-90" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </Tabs>
       </div>
 
+      {/* Dialogs remain similar but with updated text */}
       <Dialog open={!!selectedAppt} onOpenChange={(open) => !open && setSelectedAppt(null)}>
         <DialogContent className="max-w-2xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
             <DialogTitle className="text-3xl font-headline flex items-center gap-3">
-              <Wand2 className="h-6 w-6 text-primary" /> Confirmar Atendimento
+              {selectedAppt?.status === 'Atendido' ? <CheckCircle2 className="h-6 w-6 text-green-600" /> : <Wand2 className="h-6 w-6 text-primary" />} 
+              {selectedAppt?.status === 'Atendido' ? 'Histórico do Cliente' : 'Confirmar Atendimento'}
             </DialogTitle>
             <DialogDescription className="uppercase text-[10px] tracking-widest font-bold">
-              Agendamento confirmado para {selectedAppt?.clientName}
+              {selectedAppt?.clientName} • {selectedAppt?.serviceName}
             </DialogDescription>
           </DialogHeader>
           
@@ -317,32 +425,44 @@ export default function AdminDashboard() {
                     {aiResult.message}
                   </div>
                 </div>
-
-                <div className="space-y-3">
-                  <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Orientações Pré-Tratamento</h4>
-                  <div className="p-6 bg-secondary/5 text-sm leading-relaxed text-muted-foreground italic border border-border">
-                    {aiResult.guidance}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-secondary/10">
+                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Data Original</p>
+                    <p className="text-sm font-bold">{selectedAppt?.date ? format(new Date(selectedAppt.date + 'T12:00:00'), "dd/MM/yyyy") : '-'}</p>
+                  </div>
+                  <div className="p-4 bg-secondary/10">
+                    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Status Final</p>
+                    <p className="text-sm font-bold uppercase tracking-widest text-primary">{selectedAppt?.status}</p>
                   </div>
                 </div>
+                <div className="p-4 border border-border">
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-2">Registro do Sistema</p>
+                  <p className="text-xs leading-relaxed italic">Atendimento arquivado no histórico de {selectedAppt?.clientName} para consultas futuras.</p>
+                </div>
               </div>
-            ) : null}
+            )}
           </div>
 
           <DialogFooter className="sm:justify-between gap-4">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest max-w-[200px] leading-tight">
-              O e-mail foi simulado no sistema. Utilize o WhatsApp Web para contato manual imediato.
+              {selectedAppt?.status === 'Atendido' ? 'Registro de histórico bloqueado para edições.' : 'Utilize o WhatsApp para contato imediato.'}
             </p>
-            <Button 
-              className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-none uppercase text-xs tracking-widest px-8 h-12 flex items-center gap-2"
-              onClick={() => {
-                if (selectedAppt && aiResult) {
-                  const text = `${aiResult.message}%0A%0A*Orientações:*%0A${aiResult.guidance}`;
-                  window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
-                }
-              }}
-            >
-              <Send className="h-4 w-4" /> Enviar via WhatsApp
-            </Button>
+            {aiResult && (
+              <Button 
+                className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-none uppercase text-xs tracking-widest px-8 h-12 flex items-center gap-2"
+                onClick={() => {
+                  if (selectedAppt && aiResult) {
+                    const text = `${aiResult.message}%0A%0A*Orientações:*%0A${aiResult.guidance}`;
+                    window.open(`https://wa.me/${selectedAppt.clientPhone.replace(/\D/g, '')}?text=${text}`, '_blank');
+                  }
+                }}
+              >
+                <Send className="h-4 w-4" /> Enviar via WhatsApp
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -351,7 +471,7 @@ export default function AdminDashboard() {
         <DialogContent className="max-w-3xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
             <DialogTitle className="text-3xl font-headline">Reagendar Atendimento</DialogTitle>
-            <DialogDescription className="sr-only">Selecione uma nova data e horário para o atendimento de {reschedulingAppt?.clientName}.</DialogDescription>
+            <DialogDescription className="sr-only">Selecione uma nova data e horário.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
             <div className="bg-secondary/10 p-4 border border-border">
