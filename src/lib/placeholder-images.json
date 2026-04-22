@@ -33,7 +33,7 @@
     {
       "id": "service-spa",
       "description": "Ambiente de SPA e relaxamento",
-      "imageUrl": "https://picsum.photos/seed/spa-luxury/800/1000",
+      "imageUrl": "/assets/images/arquiteturafacial.png",
       "imageHint": "luxury interior"
     }
   ]
