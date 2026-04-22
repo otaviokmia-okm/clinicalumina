@@ -28,7 +28,7 @@
     {
       "id": "service-laser",
       "description": "Tecnologia Laser de última geração",
-      "imageUrl": "https://picsum.photos/seed/lumina-laser/800/1000",
+      "imageUrl": "/assets/images/laser.png",
       "imageHint": "laser skincare"
     },
     {
