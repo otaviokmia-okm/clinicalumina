@@ -151,20 +151,20 @@ export function BookingWidget() {
             <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-primary">Reservas</span>
             <h2 className="text-4xl md:text-6xl font-headline leading-tight text-foreground">Agende sua <br /><span className="text-primary italic">Experiência Lumina</span></h2>
           </div>
-          <p className="text-lg md:text-xl text-foreground/80 font-light leading-relaxed">
+          <p className="text-lg md:text-xl text-foreground font-light leading-relaxed">
             Escolha o momento ideal para sua transformação. Cada visita é planejada com exclusividade.
           </p>
         </div>
 
-        <div className="bg-white p-6 md:p-16 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] border border-border/60">
-          <form onSubmit={handleBooking} className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div className="bg-white p-6 md:p-16 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] border border-border">
+          <form onSubmit={handleBooking} className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-start">
             {/* Column 1: Calendar */}
             <div className="space-y-6 md:space-y-8">
               <div className="flex items-center gap-3 mb-2">
                 <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">1</span>
                 <Label className="text-[11px] uppercase tracking-[0.3em] font-black text-foreground">Escolha uma Data</Label>
               </div>
-              <div className="p-4 bg-secondary/20 border border-primary/10 shadow-sm overflow-hidden rounded-sm">
+              <div className="p-4 bg-secondary/20 border border-primary/20 shadow-sm overflow-hidden rounded-sm">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -179,8 +179,8 @@ export function BookingWidget() {
               </div>
             </div>
 
-            {/* Column 2: Slots */}
-            <div className="space-y-8 md:space-y-10">
+            {/* Column 2: Slots and Info */}
+            <div className="space-y-10">
               <div className="space-y-6 md:space-y-8">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <div className="flex items-center gap-3">
@@ -207,7 +207,7 @@ export function BookingWidget() {
                             "flex items-center justify-center p-4 text-[11px] font-black tracking-widest border transition-all duration-300 rounded-none h-14",
                             isBusy 
                               ? "bg-secondary text-muted-foreground/30 cursor-not-allowed border-dashed" 
-                              : "border-primary/20 bg-white text-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-secondary/50 cursor-pointer shadow-sm"
+                              : "border-primary/40 bg-white text-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-secondary cursor-pointer shadow-sm"
                           )}
                         >
                           {isBusy ? <CalendarX2 className="h-4 w-4 mr-2" /> : null}
@@ -229,17 +229,17 @@ export function BookingWidget() {
                 <div className="space-y-5">
                   <div className="relative group">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:scale-110 transition-transform" />
-                    <Input name="name" id="name" required placeholder="NOME COMPLETO" className="pl-12 h-14 rounded-none bg-secondary/10 border-border/60 focus:bg-white focus:border-primary placeholder:text-muted-foreground/60 text-xs tracking-widest font-medium" />
+                    <Input name="name" id="name" required placeholder="NOME COMPLETO" className="pl-12 h-14 rounded-none bg-secondary/10 border-foreground/20 focus:bg-white focus:border-primary placeholder:text-muted-foreground/60 text-xs tracking-widest font-bold text-foreground" />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="relative group">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:scale-110 transition-transform" />
-                      <Input name="phone" id="phone" required type="tel" placeholder="(00) 00000-0000" className="pl-12 h-14 rounded-none bg-secondary/10 border-border/60 focus:bg-white focus:border-primary placeholder:text-muted-foreground/60 text-xs tracking-widest font-medium" />
+                      <Input name="phone" id="phone" required type="tel" placeholder="(00) 00000-0000" className="pl-12 h-14 rounded-none bg-secondary/10 border-foreground/20 focus:bg-white focus:border-primary placeholder:text-muted-foreground/60 text-xs tracking-widest font-bold text-foreground" />
                     </div>
                     <div className="relative group">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:scale-110 transition-transform" />
-                      <Input name="email" id="email" required type="email" placeholder="EMAIL" className="pl-12 h-14 rounded-none bg-secondary/10 border-border/60 focus:bg-white focus:border-primary placeholder:text-muted-foreground/60 text-xs tracking-widest font-medium" />
+                      <Input name="email" id="email" required type="email" placeholder="EMAIL" className="pl-12 h-14 rounded-none bg-secondary/10 border-foreground/20 focus:bg-white focus:border-primary placeholder:text-muted-foreground/60 text-xs tracking-widest font-bold text-foreground" />
                     </div>
                   </div>
                 </div>
@@ -247,18 +247,10 @@ export function BookingWidget() {
                 <Button 
                   type="submit" 
                   disabled={loading || !date || !slot || busySlots.includes(slot)} 
-                  className="w-full h-16 text-[11px] uppercase tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-lg active:scale-[0.98]"
+                  className="w-full h-16 text-[11px] uppercase tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-lg active:scale-[0.98] font-black"
                 >
                   {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Confirmar Agendamento"}
                 </Button>
-                
-                <div className="flex items-center justify-center gap-3">
-                   <Sparkles className="h-4 w-4 text-primary" />
-                   <p className="text-[10px] text-center text-foreground font-bold uppercase tracking-[0.2em]">
-                     Atendimento exclusivo mediante agendamento.
-                   </p>
-                   <Sparkles className="h-4 w-4 text-primary" />
-                </div>
               </div>
             </div>
           </form>

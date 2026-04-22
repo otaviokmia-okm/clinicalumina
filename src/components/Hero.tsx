@@ -9,13 +9,14 @@ export function Hero() {
 
   return (
     <section className="relative h-screen min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-hidden bg-[#0a0a0a]">
-      {/* Background with subtle scale effect */}
+      {/* Background with subtle scale effect and transition duration fixed via inline style */}
       <div 
-        className="absolute inset-0 z-0 opacity-60 brightness-[0.7] scale-105 transition-transform duration-[20000ms] ease-out hover:scale-100"
+        className="absolute inset-0 z-0 opacity-60 brightness-[0.7] scale-105 transition-transform ease-out hover:scale-100"
         style={{ 
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          transitionDuration: '20000ms'
         }}
         data-ai-hint="luxury aesthetic"
       />
@@ -33,7 +34,6 @@ export function Hero() {
           </div>
           
           <div className="flex flex-col items-center">
-            {/* Título Principal com a mesma fonte Alegreya do menu, uppercase e tracking expandido */}
             <h1 className="font-headline text-5xl sm:text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] uppercase tracking-[0.2em] text-white leading-none drop-shadow-2xl">
               Lumina
             </h1>
