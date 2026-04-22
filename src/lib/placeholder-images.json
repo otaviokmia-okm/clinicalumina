@@ -15,7 +15,7 @@
     {
       "id": "service-facial",
       "description": "Procedimento de Harmonização Facial",
-      "imageUrl": "https://picsum.photos/seed/facial-luxury/800/1000",
+      "imageUrl": "/assets/images/armonização.png",
       "imageHint": "facial aesthetics"
     },
     {
