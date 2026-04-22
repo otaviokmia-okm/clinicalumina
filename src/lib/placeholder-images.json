@@ -21,7 +21,7 @@
     {
       "id": "service-bio",
       "description": "Aplicação de Bioestimuladores",
-      "imageUrl": "https://picsum.photos/seed/bio-luxury/800/1000",
+      "imageUrl": "/assets/images/bioestimuladores.png",
       "imageHint": "skincare medical"
     },
     {

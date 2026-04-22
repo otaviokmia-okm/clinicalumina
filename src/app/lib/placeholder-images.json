@@ -22,7 +22,7 @@
     {
       "id": "service-bio",
       "description": "Aplicação de Bioestimuladores",
-      "imageUrl": "https://picsum.photos/seed/lumina-bio/800/1000",
+      "imageUrl": "/assets/images/bioestimuladores.png",
       "imageHint": "dermatologist treatment"
     },
     {
