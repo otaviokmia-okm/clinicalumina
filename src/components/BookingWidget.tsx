@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -120,49 +121,49 @@ export function BookingWidget() {
 
   if (isSuccess) {
     return (
-      <div className="bg-background p-16 text-center border-2 border-primary/10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto my-32 shadow-2xl">
-        <div className="mx-auto w-20 h-20 bg-primary/10 flex items-center justify-center rounded-full mb-8">
-           <CheckCircle2 className="h-10 w-10 text-primary" />
+      <div className="bg-background p-8 md:p-16 text-center border-2 border-primary/10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto my-16 md:my-32 shadow-2xl">
+        <div className="mx-auto w-16 h-16 md:w-20 md:h-20 bg-primary/10 flex items-center justify-center rounded-full mb-6 md:mb-8">
+           <CheckCircle2 className="h-8 w-8 md:h-10 md:h-10 text-primary" />
         </div>
-        <h3 className="text-4xl font-headline mb-6">Sua Visita Aguarda</h3>
-        <p className="text-muted-foreground mb-12 max-w-md mx-auto font-light leading-relaxed">
+        <h3 className="text-3xl md:text-4xl font-headline mb-4 md:mb-6">Sua Visita Aguarda</h3>
+        <p className="text-sm md:text-base text-muted-foreground mb-8 md:mb-12 max-w-md mx-auto font-light leading-relaxed">
           Sua solicitação para {bookingDetails && format(new Date(bookingDetails.date + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })} foi registrada. Nosso concierge entrará em contato em breve.
         </p>
         
-        <div className="space-y-6">
-          <Button asChild className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-16 rounded-none uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3">
+        <div className="space-y-4 md:space-y-6">
+          <Button asChild className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-14 md:h-16 rounded-none uppercase tracking-[0.2em] text-[9px] md:text-[10px] flex items-center justify-center gap-3">
             <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
               <MessageCircle className="h-5 w-5" /> Contatar Concierge via WhatsApp
             </a>
           </Button>
-          <Button onClick={() => setIsSuccess(false)} variant="ghost" className="uppercase text-[9px] tracking-[0.3em] font-bold text-muted-foreground hover:text-primary">Novo Agendamento</Button>
+          <Button onClick={() => setIsSuccess(false)} variant="ghost" className="uppercase text-[8px] md:text-[9px] tracking-[0.3em] font-bold text-muted-foreground hover:text-primary">Novo Agendamento</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <section id="booking" className="py-24 bg-background border-t border-border">
-      <div className="max-w-7xl mx-auto px-8">
-        {/* Intro Text - Now on top */}
-        <div className="mb-20 text-center max-w-3xl mx-auto space-y-6">
-          <div className="space-y-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Reservas</span>
-            <h2 className="text-5xl md:text-6xl font-headline leading-tight">Agende sua <br /><span className="text-primary italic">Experiência Lumina</span></h2>
+    <section id="booking" className="py-16 md:py-24 bg-background border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        {/* Intro Text */}
+        <div className="mb-12 md:mb-20 text-center max-w-3xl mx-auto space-y-4 md:space-y-6">
+          <div className="space-y-2 md:space-y-4">
+            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-primary">Reservas</span>
+            <h2 className="text-4xl md:text-6xl font-headline leading-tight">Agende sua <br /><span className="text-primary italic">Experiência Lumina</span></h2>
           </div>
-          <p className="text-xl text-muted-foreground font-light leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed">
             Escolha o momento ideal para sua transformação. Cada visita é planejada com exclusividade para atender seus desejos.
           </p>
         </div>
 
-        <form onSubmit={handleBooking} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start bg-white p-8 md:p-16 shadow-2xl border border-border/40">
+        <form onSubmit={handleBooking} className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start bg-white p-6 md:p-16 shadow-2xl border border-border/40">
           {/* Column 1: Calendar */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             <div className="flex items-center gap-3 mb-2">
               <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">1</span>
               <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Escolha uma Data</Label>
             </div>
-            <div className="p-4 bg-secondary/10 border border-primary/5 shadow-inner">
+            <div className="p-2 md:p-4 bg-secondary/10 border border-primary/5 shadow-inner overflow-hidden">
               <Calendar
                 mode="single"
                 selected={date}
@@ -178,8 +179,8 @@ export function BookingWidget() {
           </div>
 
           {/* Column 2: Slots & Form */}
-          <div className="space-y-12">
-            <div className="space-y-8">
+          <div className="space-y-8 md:space-y-12">
+            <div className="space-y-6 md:space-y-8">
               <div className="flex items-center justify-between border-b border-border/40 pb-4">
                 <div className="flex items-center gap-3">
                   <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">2</span>
@@ -188,7 +189,7 @@ export function BookingWidget() {
                 {isLoadingAppts && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
               </div>
               
-              <RadioGroup value={slot} onValueChange={setSlot} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <RadioGroup value={slot} onValueChange={setSlot} className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
                 {TIME_SLOTS.map((time) => {
                   const isBusy = busySlots.includes(time);
                   return (
@@ -202,7 +203,7 @@ export function BookingWidget() {
                       <Label
                         htmlFor={time}
                         className={cn(
-                          "flex items-center justify-center p-4 text-[11px] font-bold tracking-widest border border-border transition-all duration-300 rounded-none",
+                          "flex items-center justify-center p-3 md:p-4 text-[10px] md:text-[11px] font-bold tracking-widest border border-border transition-all duration-300 rounded-none",
                           isBusy 
                             ? "bg-muted text-muted-foreground/40 cursor-not-allowed border-dashed opacity-50" 
                             : "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-secondary cursor-pointer"
@@ -217,26 +218,26 @@ export function BookingWidget() {
               </RadioGroup>
             </div>
 
-            <div className="space-y-8 pt-8 border-t border-border/40">
+            <div className="space-y-6 md:space-y-8 pt-6 md:pt-8 border-t border-border/40">
               <div className="flex items-center gap-3 mb-2">
                 <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">3</span>
                 <Label className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground">Suas Informações</Label>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-                  <Input name="name" id="name" required placeholder="NOME COMPLETO" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
+                  <Input name="name" id="name" required placeholder="NOME COMPLETO" className="pl-12 h-12 md:h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-[10px] md:text-xs tracking-widest" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-                    <Input name="phone" id="phone" required type="tel" placeholder="(00) 00000-0000" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
+                    <Input name="phone" id="phone" required type="tel" placeholder="(00) 00000-0000" className="pl-12 h-12 md:h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-[10px] md:text-xs tracking-widest" />
                   </div>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-                    <Input name="email" id="email" required type="email" placeholder="EMAIL" className="pl-12 h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-xs tracking-widest" />
+                    <Input name="email" id="email" required type="email" placeholder="EMAIL" className="pl-12 h-12 md:h-14 rounded-none bg-secondary/10 border-none placeholder:text-muted-foreground/40 text-[10px] md:text-xs tracking-widest" />
                   </div>
                 </div>
               </div>
@@ -244,14 +245,14 @@ export function BookingWidget() {
               <Button 
                 type="submit" 
                 disabled={loading || !date || !slot || busySlots.includes(slot)} 
-                className="w-full h-16 text-[11px] uppercase tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-xl"
+                className="w-full h-14 md:h-16 text-[10px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] bg-primary hover:bg-primary/90 text-primary-foreground transition-all rounded-none shadow-xl"
               >
                 {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Confirmar Solicitação"}
               </Button>
               
               <div className="flex items-center justify-center gap-3 opacity-50">
                  <Sparkles className="h-3 w-3 text-primary" />
-                 <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.3em]">
+                 <p className="text-[8px] md:text-[9px] text-center text-muted-foreground uppercase tracking-[0.2em] md:tracking-[0.3em]">
                    Atendimento exclusivo mediante agendamento.
                  </p>
                  <Sparkles className="h-3 w-3 text-primary" />
