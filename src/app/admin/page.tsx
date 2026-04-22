@@ -24,13 +24,13 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Appointment, AppointmentStatus } from '@/lib/types';
-import { Check, X, Calendar as CalendarIcon, Wand2, Loader2, Bell, Mail, Send, Filter, CheckCircle2 } from 'lucide-react';
+import { Check, X, Calendar as CalendarIcon, Wand2, Loader2, Mail, Send, Filter, CheckCircle2 } from 'lucide-react';
 import { aiPersonalizedConfirmation } from '@/ai/flows/ai-personalized-confirmation';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, doc, query } from 'firebase/firestore';
-import { format, isBefore, startOfDay, parseISO } from 'date-fns';
+import { format, isBefore, startOfDay, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -47,13 +47,11 @@ export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
-  const prevCount = useRef<number>(0);
   const updatedRefs = useRef<Set<string>>(new Set());
   
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("active");
 
-  // Removido o orderBy do Firestore para evitar erros de índice no protótipo
   const appointmentsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collection(db, 'appointments'));
@@ -69,35 +67,37 @@ export default function AdminDashboard() {
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newSlot, setNewSlot] = useState<string>('');
 
-  // Ordenação e Filtragem Cliente-Side para maior robustez
   const appointments = useMemo(() => {
     if (!rawAppointments) return [];
     return [...rawAppointments].sort((a, b) => {
-      const dateCompare = a.date.localeCompare(b.date);
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      const dateCompare = dateA.localeCompare(dateB);
       if (dateCompare !== 0) return dateCompare;
-      return a.timeSlot.localeCompare(b.timeSlot);
+      return (a.timeSlot || '').localeCompare(b.timeSlot || '');
     });
   }, [rawAppointments]);
 
-  // Auto-Mark as Attended para datas passadas
   useEffect(() => {
     if (appointments && appointments.length > 0) {
       const today = startOfDay(new Date());
       appointments.forEach(appt => {
-        if (updatedRefs.current.has(appt.id)) return;
+        if (!appt.id || updatedRefs.current.has(appt.id)) return;
 
         try {
-          const apptDate = startOfDay(parseISO(appt.date));
-          if (isBefore(apptDate, today) && (appt.status === 'Confirmado' || appt.status === 'Remarcado' || appt.status === 'Pendente')) {
-            const docRef = doc(db, 'appointments', appt.id);
-            updatedRefs.current.add(appt.id);
-            updateDocumentNonBlocking(docRef, { 
-              status: 'Atendido',
-              updatedAt: new Date().toISOString()
-            });
+          const apptDate = appt.date ? startOfDay(parseISO(appt.date)) : null;
+          if (apptDate && isValid(apptDate) && isBefore(apptDate, today)) {
+            if (appt.status === 'Confirmado' || appt.status === 'Remarcado' || appt.status === 'Pendente') {
+              const docRef = doc(db, 'appointments', appt.id);
+              updatedRefs.current.add(appt.id);
+              updateDocumentNonBlocking(docRef, { 
+                status: 'Atendido',
+                updatedAt: new Date().toISOString()
+              });
+            }
           }
         } catch (e) {
-          console.error("Erro ao processar data do agendamento", appt.id, e);
+          console.error("Erro ao processar data", appt.id, e);
         }
       });
     }
@@ -108,18 +108,6 @@ export default function AdminDashboard() {
       router.push('/admin/login');
     }
   }, [user, isUserLoading, router]);
-
-  useEffect(() => {
-    if (appointments && appointments.length > prevCount.current) {
-      if (prevCount.current > 0) {
-        toast({
-          title: "Novo Agendamento!",
-          description: "Uma nova solicitação acaba de chegar no sistema.",
-        });
-      }
-      prevCount.current = appointments.length;
-    }
-  }, [appointments, toast]);
 
   const filteredAppointments = useMemo(() => {
     if (!appointments) return [];
@@ -262,9 +250,6 @@ export default function AdminDashboard() {
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Novas Solicitações</p>
                 <p className="font-headline text-lg text-primary">{appointments?.filter(a => a.status === 'Pendente').length || 0}</p>
               </div>
-              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <Bell className={cn("h-4 w-4 text-primary", appointments?.some(a => a.status === 'Pendente') && "animate-bounce")} />
-              </div>
             </div>
           </div>
         </div>
@@ -395,9 +380,6 @@ export default function AdminDashboard() {
               {selectedAppt?.status === 'Atendido' ? <CheckCircle2 className="h-6 w-6 text-green-600" /> : <Wand2 className="h-6 w-6 text-primary" />} 
               {selectedAppt?.status === 'Atendido' ? 'Histórico do Cliente' : 'Confirmar Atendimento'}
             </DialogTitle>
-            <DialogDescription className="uppercase text-[10px] tracking-widest font-bold">
-              {selectedAppt?.clientName} • {selectedAppt?.serviceName}
-            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6 py-6 max-h-[60vh] overflow-y-auto pr-2">
@@ -468,7 +450,6 @@ export default function AdminDashboard() {
         <DialogContent className="max-w-3xl bg-background border-none shadow-2xl rounded-none">
           <DialogHeader>
             <DialogTitle className="text-3xl font-headline">Reagendar Atendimento</DialogTitle>
-            <DialogDescription className="sr-only">Selecione uma nova data e horário.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
             <div className="bg-secondary/10 p-4 border border-border">

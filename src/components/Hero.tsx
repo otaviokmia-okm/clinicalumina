@@ -33,10 +33,11 @@ export function Hero() {
           </div>
           
           <div className="flex flex-col items-center">
-            <h1 className="font-headline text-5xl sm:text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] uppercase tracking-[0.15em] md:tracking-[0.25em] text-white leading-none drop-shadow-2xl">
+            {/* Título Principal com a mesma fonte Alegreya do menu, uppercase e tracking expandido */}
+            <h1 className="font-headline text-5xl sm:text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] uppercase tracking-[0.2em] text-white leading-none drop-shadow-2xl">
               Lumina
             </h1>
-            <span className="text-primary font-black uppercase tracking-[0.4em] md:tracking-[0.6em] text-[8px] sm:text-xs md:text-sm lg:text-base mt-4 md:mt-6 drop-shadow-md">
+            <span className="text-primary font-black uppercase tracking-[0.6em] text-[8px] sm:text-xs md:text-sm lg:text-base mt-4 md:mt-6 drop-shadow-md">
               Aesthetics
             </span>
           </div>
